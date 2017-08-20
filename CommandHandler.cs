@@ -309,6 +309,7 @@ namespace dotnet_irc_testing
         internal void HandleCommand(Irc irc, string text)
         {
             string[] args = text.Split(' ');
+            
             if (args[0].StartsWith("//") || !args[0].StartsWith("/"))
             {
                 if (args[0].StartsWith("//"))

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 
 namespace dotnet_irc_testing
 {
@@ -8,11 +9,12 @@ namespace dotnet_irc_testing
         {
             Console.WriteLine("Hello World!");
 
-            IrcMessage msg = new IrcMessage(":james000-!~james000_@ns354110.ip-91-121-101.eu PRIVMSG #rymate :OUTRAAAGGEEEEE");
+            IrcMessage msg =
+                new IrcMessage(":james000-!~james000_@ns354110.ip-91-121-101.eu PRIVMSG #rymate :OUTRAAAGGEEEEE");
 
             Console.WriteLine(msg.TrailMessage.TrailingContent);
-            
-            IrcServer server = new IrcServer() 
+
+            IrcServer server = new IrcServer()
             {
                 name = "Test server",
                 hostname = "irc.esper.net",
@@ -26,11 +28,13 @@ namespace dotnet_irc_testing
             socket.Connect();
 
             CommandHandler handler = new CommandHandler();
-            
-            while (true) 
+            while (!socket.ReadOrWriteFailed)
             {
-                Console.Write("> "); // Prompt
-                string line = Console.ReadLine(); // Get string from user
+                var prefix = socket.currentChannel != null
+                    ? $"[{socket.currentChannel} ({socket.GetChannelUsers(socket.currentChannel).Count})] "
+                    : "";
+
+                var line = ReadLine.Read($"{prefix}> "); // Get string from user
                 handler.HandleCommand(socket, line);
             }
         }
