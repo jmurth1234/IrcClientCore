@@ -40,7 +40,6 @@ namespace dotnet_irc_testing
                     while (true)
                     {
                         var line = await clientStreamReader.ReadLineAsync();
-                        Console.WriteLine(line);
                         await HandleLine(line);
                     }
                 }

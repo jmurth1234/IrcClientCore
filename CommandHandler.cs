@@ -35,7 +35,6 @@ namespace dotnet_irc_testing
 
             RegisterCommand("/mute", QuietCommandHandler);
             RegisterCommand("/unmute", QuietCommandHandler);
-            RegisterCommand("/switch", CurrentChannelCommandHandler);
 
             RegisterCommand("/kick", KickCommandHandler);
             RegisterCommand("/ban", BanCommandHandler);
@@ -43,7 +42,7 @@ namespace dotnet_irc_testing
             RegisterCommand("/raw", RawCommandHandler);
         }
 
-        internal void RegisterCommand(string cmd, Command handler)
+        public void RegisterCommand(string cmd, Command handler)
         {
             CommandTable.Add(cmd, handler);
             CommandList.Add(cmd);
@@ -102,16 +101,6 @@ namespace dotnet_irc_testing
             }
 
             irc.WriteLine("WHOIS " + args[1]);
-        }
-
-        internal void CurrentChannelCommandHandler(Irc irc, string[] args)
-        {
-            if (args.Length != 2)
-            {
-                return;
-            }
-
-            irc.currentChannel = args[1];
         }
 
         internal void QueryCommandHandler(Irc irc, string[] args)
@@ -338,6 +327,11 @@ namespace dotnet_irc_testing
                     irc.ClientMessage("Type /help for a list of commands.");
                 }
             }
+        }
+
+        public List<string> GetCommands()
+        {
+            return CommandList;
         }
 
     }

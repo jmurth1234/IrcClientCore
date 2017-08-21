@@ -542,11 +542,7 @@ namespace dotnet_irc_testing
                     msg.User = "";
                     AddMessage("Server", msg);
                 }
-                Console.WriteLine(parsedLine.CommandMessage.Command + " - " + receivedData);
             }
-
-            //Console.WriteLine(parsedLine.CommandMessage.Command + " - " + receivedData);
-
         }
 
 
