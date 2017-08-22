@@ -1,6 +1,6 @@
 using System;
 
-namespace dotnet_irc_testing
+namespace IrcClientCore
 {
     public class Message
     {

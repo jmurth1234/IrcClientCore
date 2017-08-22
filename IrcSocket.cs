@@ -3,7 +3,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace dotnet_irc_testing
+namespace IrcClientCore
 {
     class IrcSocket : Irc
     {
@@ -50,7 +50,33 @@ namespace dotnet_irc_testing
                 Console.WriteLine(e.StackTrace);
             }
         }
-        
+
+        public override void DisconnectAsync(string msg = "Powered by WinIRC", bool attemptReconnect = false)
+        {
+            WriteLine("QUIT :" + msg);
+
+            if (attemptReconnect)
+            {
+                IsReconnecting = true;
+                ReconnectionAttempts++;
+
+                Task.Run(async () => {
+                    if (ReconnectionAttempts < 3)
+                        await Task.Delay(1000);
+                    else
+                        await Task.Delay(60000);
+
+                    if (IsReconnecting)
+                        Connect();
+                }).Start();
+            }
+            else
+            {
+                IsConnected = false;
+                HandleDisconnect?.Invoke(this);
+            }
+        }
+
         public override async Task WriteLine(string str)
         {
             await clientStreamWriter.WriteLineAsync(str);

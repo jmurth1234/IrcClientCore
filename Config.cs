@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace dotnet_irc_testing
+namespace IrcClientCore
 {
     public static class Config
     {

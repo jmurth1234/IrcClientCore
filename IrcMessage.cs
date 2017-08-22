@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace dotnet_irc_testing
+namespace IrcClientCore
 {
     /// <summary>
     /// Breaks an IRC server response down in to a prefix, command w/ parameters and an optional trail.

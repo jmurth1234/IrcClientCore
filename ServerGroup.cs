@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace dotnet_irc_testing
+namespace IrcClientCore
 {
     public class ServerGroup : ObservableCollection<Channel>
     {

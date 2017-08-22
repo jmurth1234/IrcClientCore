@@ -1,3 +1,4 @@
+using IrcClientCore.Commands;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,7 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace dotnet_irc_testing
+namespace IrcClientCore
 {
     public abstract class Irc
     {
@@ -26,7 +27,9 @@ namespace dotnet_irc_testing
         public ObservableCollection<Message> ircMessages { get; set; }
 
         public ServerGroup channelList { get; set; }
-        
+
+        public CommandManager CommandManager { get; private set; }
+
         public Dictionary<string, ChannelStore> channelStore { get; set; }
 
         private bool autoReconnect = true;
@@ -80,6 +83,8 @@ namespace dotnet_irc_testing
 
             channelBuffers = new Dictionary<string, ObservableCollection<Message>>(StringComparer.OrdinalIgnoreCase);
             channelStore = new Dictionary<string, ChannelStore>(StringComparer.OrdinalIgnoreCase);
+
+            this.CommandManager = new CommandManager(this);
 
             IsAuthed = false;
 

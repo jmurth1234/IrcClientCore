@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IrcClientCore.Commands;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,13 +7,19 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace dotnet_irc_testing
+namespace IrcClientCore
 {
     class Program
     {
-        private static ObservableCollection<Message> channelBuffers;
+        private ObservableCollection<Message> channelBuffers;
+        private IrcSocket socket;
 
         static void Main(string[] args)
+        {
+            new Program().Start();
+        }
+
+        private void Start()
         {
             IrcServer server = new IrcServer()
             {
@@ -23,22 +30,34 @@ namespace dotnet_irc_testing
                 channels = "#rymate"
             };
             ReadLine.PasswordMode = true;
-            server.password = ReadLine.Read("Password: ");
+            if (server.hostname.Contains("znc")) server.password += server.username + ":";
+            server.password += ReadLine.Read("Password: ");
             ReadLine.PasswordMode = false;
 
-            IrcSocket socket = new IrcSocket(server);
+            socket = new IrcSocket(server);
 
             socket.Connect();
 
-            CommandHandler handler = new CommandHandler();
-            handler.RegisterCommand("/switch", CurrentChannelCommandHandler);
+            CommandManager handler = socket.CommandManager;
+
+            handler.RegisterCommand("/switch", new SwitchCommand(this));
+
             ReadLine.AutoCompletionHandler = (text, index) =>
             {
                 if (text.StartsWith("/"))
                 {
-                    var current = text.Split(" ")[0];
-                    var commands = handler.GetCommands().Where(cmd => cmd.StartsWith(current));
-                    return commands.ToArray();
+                    var array = text.Split(" ");
+                    var current = array[0];
+
+                    if (array.Length > 1)
+                    {
+                        return handler.GetCompletions(array[0], array.Last());
+                    }
+                    else
+                    {
+                        var commands = handler.CommandList.Where(cmd => cmd.StartsWith(current));
+                        return commands.ToArray();
+                    }
                 }
                 else if (((text.StartsWith("/") && index > 0) || !text.StartsWith("/")) && socket.currentChannel != null)
                 {
@@ -46,10 +65,12 @@ namespace dotnet_irc_testing
                     var current = text.Split(" ").Last();
                     return users.Where(cmd => cmd.StartsWith(current)).ToArray();
                 }
-                
+
                 return new string[0];
             };
-            
+
+            SwitchChannel("Server");
+
             while (!socket.ReadOrWriteFailed)
             {
                 var prefix = socket.currentChannel != null
@@ -57,36 +78,32 @@ namespace dotnet_irc_testing
                     : "";
 
                 var line = ReadLine.Read($"{prefix}> "); // Get string from user
-                handler.HandleCommand(socket, line);
+                if (line == "") continue;
+                handler.HandleCommand(line);
             }
         }
 
-        private static void CurrentChannelCommandHandler(Irc irc, string[] args)
+        internal void SwitchChannel(string channel)
         {
-            if (args.Length != 2)
-            {
-                return;
-            }
-
             if (channelBuffers != null)
             {
                 channelBuffers.CollectionChanged -= ChannelBuffersOnCollectionChanged;
             }
 
-            irc.currentChannel = args[1];
-            channelBuffers = irc.channelBuffers[irc.currentChannel];
-            irc.channelStore[irc.currentChannel].SortUsers();
+            socket.currentChannel = channel;
+            channelBuffers = socket.channelBuffers[socket.currentChannel];
+            socket.channelStore[socket.currentChannel].SortUsers();
             PrintMessages(channelBuffers);
 
             channelBuffers.CollectionChanged += ChannelBuffersOnCollectionChanged;
         }
 
-        private static void ChannelBuffersOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+        private void ChannelBuffersOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
         {
             PrintMessages(args.NewItems.OfType<Message>());
         }
 
-        private static void PrintMessages(IEnumerable<Message> messages)
+        private void PrintMessages(IEnumerable<Message> messages)
         {
             foreach (var message in messages)
             {
@@ -94,4 +111,33 @@ namespace dotnet_irc_testing
             }
         }
     }
+
+    internal class SwitchCommand : BaseCommand
+    {
+        private Program program;
+
+        public SwitchCommand(Program program)
+        {
+            this.program = program;
+        }
+
+        public override void RunCommand(string[] args)
+        {
+            if (args.Length != 2)
+            {
+                return;
+            }
+
+            program.SwitchChannel(args[1]);
+        }
+
+        public override string[] GetCompletions(string word)
+        {
+            var channels =  Irc.channelList.Select(channel => channel.Name);
+            var completions = channels.Where(name => name.ToLower().Contains(word.ToLower()));
+            return completions.ToArray();
+        }
+    }
+
+
 }
