@@ -50,7 +50,7 @@ namespace IrcClientCore
 
         public bool IsConnected = false;
         internal int ReconnectionAttempts;
-        internal bool ReadOrWriteFailed;
+        public bool ReadOrWriteFailed { get; internal set; }
 
         public Action<Irc> HandleDisconnect { get; set; }
 

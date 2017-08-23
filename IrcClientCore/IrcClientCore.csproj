@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <AssemblyName>IrcClientCore</AssemblyName>
@@ -9,8 +9,7 @@
     <Authors>rymate1234</Authors>
     <Company>N/A</Company>
     <Product>IrcClientCore</Product>
+    <ApplicationIcon />
+    <StartupObject />
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="ReadLine" Version="1.2.0" />
-  </ItemGroup>
 </Project>

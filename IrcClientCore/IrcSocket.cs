@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace IrcClientCore
 {
-    class IrcSocket : Irc
+    public class IrcSocket : Irc
     {
         private TcpClient conn;
         private NetworkStream stream;

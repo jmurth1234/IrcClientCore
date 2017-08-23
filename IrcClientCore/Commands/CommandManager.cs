@@ -51,7 +51,7 @@ namespace IrcClientCore.Commands
             CommandTable.Add(cmd, handler);
         }
 
-        internal string[] GetCompletions(string command, string arg)
+        public string[] GetCompletions(string command, string arg)
         {
             return GetCommand(command).GetCompletions(arg);
         }
@@ -78,7 +78,7 @@ namespace IrcClientCore.Commands
             return null;
         }
 
-        internal void HandleCommand(string text)
+        public void HandleCommand(string text)
         {
             string[] args = text.Split(' ');
             

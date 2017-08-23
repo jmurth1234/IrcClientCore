@@ -1,20 +1,19 @@
-﻿using IrcClientCore.Commands;
+﻿using IrcClientCore;
+using IrcClientCore.Commands;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Runtime.InteropServices;
 
-namespace IrcClientCore
+namespace ConsoleIrcClient
 {
-    class Program
+    public class Program
     {
         private ObservableCollection<Message> channelBuffers;
         private IrcSocket socket;
 
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             new Program().Start();
         }
@@ -133,11 +132,9 @@ namespace IrcClientCore
 
         public override string[] GetCompletions(string word)
         {
-            var channels =  Irc.channelList.Select(channel => channel.Name);
+            var channels = Irc.channelList.Select(channel => channel.Name);
             var completions = channels.Where(name => name.ToLower().Contains(word.ToLower()));
             return completions.ToArray();
         }
     }
-
-
 }
