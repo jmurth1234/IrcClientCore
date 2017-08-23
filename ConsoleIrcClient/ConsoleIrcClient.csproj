@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\dotnet-irc-testing\IrcClientCore.csproj" />
+    <ProjectReference Include="..\IrcClientCore\IrcClientCore.csproj" />
   </ItemGroup>
 
 </Project>
