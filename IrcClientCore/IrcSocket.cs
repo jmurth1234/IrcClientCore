@@ -7,10 +7,10 @@ namespace IrcClientCore
 {
     public class IrcSocket : Irc
     {
-        private TcpClient conn;
-        private NetworkStream stream;
-        private StreamReader clientStreamReader;
-        private StreamWriter clientStreamWriter;
+        private TcpClient _conn;
+        private NetworkStream _stream;
+        private StreamReader _clientStreamReader;
+        private StreamWriter _clientStreamWriter;
 
         public IrcSocket(IrcServer server) : base(server)
         {
@@ -18,28 +18,28 @@ namespace IrcClientCore
 
         public override async void Connect()
         {
-            if (server == null)
+            if (Server == null)
                 return;
 
             IsAuthed = false;
             ReadOrWriteFailed = false;
-            conn = new TcpClient();
-            conn.NoDelay = true;
+            _conn = new TcpClient();
+            _conn.NoDelay = true;
             try
             {
-                await conn.ConnectAsync(server.hostname, server.port);
+                await _conn.ConnectAsync(Server.Hostname, Server.Port);
 
-                if (conn.Connected)
+                if (_conn.Connected)
                 {
-                    stream = conn.GetStream();
-                    clientStreamReader = new StreamReader(stream);
-                    clientStreamWriter = new StreamWriter(stream);
+                    _stream = _conn.GetStream();
+                    _clientStreamReader = new StreamReader(_stream);
+                    _clientStreamWriter = new StreamWriter(_stream);
 
                     AttemptAuth();
 
                     while (true)
                     {
-                        var line = await clientStreamReader.ReadLineAsync();
+                        var line = await _clientStreamReader.ReadLineAsync();
                         await HandleLine(line);
                     }
                 }
@@ -55,7 +55,7 @@ namespace IrcClientCore
         {
             WriteLine("QUIT :" + msg);
 
-            if (attemptReconnect)
+            if (Server.ShouldReconnect && attemptReconnect)
             {
                 IsReconnecting = true;
                 ReconnectionAttempts++;
@@ -77,10 +77,10 @@ namespace IrcClientCore
             }
         }
 
-        public override async Task WriteLine(string str)
+        public override void WriteLine(string str)
         {
-            await clientStreamWriter.WriteLineAsync(str);
-            await clientStreamWriter.FlushAsync();
+            _clientStreamWriter.WriteLine(str);
+            _clientStreamWriter.Flush();
         }
     }
 }

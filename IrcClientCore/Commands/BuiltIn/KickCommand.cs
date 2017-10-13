@@ -12,7 +12,7 @@ namespace IrcClientCore.Commands
             }
 
             var nick = args[1];
-            var kick = "KICK " + Irc.currentChannel + " " + nick;
+            var kick = "KICK " + Irc.CurrentChannel + " " + nick;
 
             if (args.Length > 3)
             {

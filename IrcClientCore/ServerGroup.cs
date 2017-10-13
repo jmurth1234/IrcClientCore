@@ -7,33 +7,30 @@ using System.Threading.Tasks;
 
 namespace IrcClientCore
 {
-    public class ServerGroup : ObservableCollection<Channel>
+    public class ChannelsGroup : ObservableCollection<Channel>
     {
-        public ServerGroup(ObservableCollection<Channel> items) : base(items)
-        {
-        }
+        public ChannelsGroup(IEnumerable<Channel> items) : base(items) { }
 
-        private bool ServerAdded;
+        private bool _serverAdded;
+
+        public Channel ServerLog { get; private set; }
 
         public bool Contains(String s)
         {
-            return this.Any(chan => chan.Name == s );
-        }
-
-        public void Add(String s)
-        {
-            this.Add(new Channel
-            {
-                Name = s,
-                Server = Server
-            });
+            return this.Any(chan => chan.Name.ToLower() == s.ToLower() );
         }
 
         public void Insert(int i, String s)
         {
-            if (s == "Server" && !ServerAdded)
+            if (s == "Server" && !_serverAdded)
             {
-                ServerAdded = true;
+                ServerLog = new Channel
+                {
+                    Name = s,
+                    Server = Server
+                };
+
+                _serverAdded = true;
                 return;
             }
 
@@ -46,22 +43,19 @@ namespace IrcClientCore
 
         public void Remove(String s)
         {
-            var channel = this.First(chan => chan.Name == s);
-            this.Remove(channel);
+            this.Remove(Get(s));
         }
 
-        public string Server { get; set; }
-    }
-
-    public class Channel
-    {
-        public string Server { get; set; }
-        public string Name { get; set; }
-        public bool ServerLog => Name == "Server";
-
-        public override string ToString()
+        public Channel this[string s]
         {
-            return Name;
+            get { return Get(s); }
         }
+
+        public Channel Get(string s)
+        {
+            return this.FirstOrDefault(chan => chan.Name.ToLower() == s.ToLower());
+        }
+
+        public string Server { get; set; }
     }
 }

@@ -8,23 +8,23 @@ namespace IrcClientCore
 {
     public class IrcServer
     {
-        public bool invalid { get; set; }
+        public bool Invalid { get; set; }
 
-        public string name { get; set; } = "";
-        public string hostname { get; set; } = "";
-        public int port { get; set; } = 6667;
-        public bool ssl { get; set; } = false;
-        public bool webSocket { get; set; } = false;
-        public string username { get; set; } = "";
-        public string password { get; set; } = "";
-        public string nickservPassword { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Hostname { get; set; } = "";
+        public int Port { get; set; } = 6667;
+        public bool Ssl { get; set; } = false;
+        public bool ShouldReconnect { get; set; } = true;
+        public string Username { get; set; } = "";
+        public string Password { get; set; } = "";
+        public string NickservPassword { get; set; } = "";
 
         // channels are a string seperated by commas
-        public string channels { get; set; } = "";
+        public string Channels { get; set; } = "";
 
         public override String ToString()
         {
-            return name;
+            return Name;
         }
     }
 }

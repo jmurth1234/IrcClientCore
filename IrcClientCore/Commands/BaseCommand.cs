@@ -15,10 +15,10 @@ namespace IrcClientCore.Commands
             return new string[0];
         }
 
-        internal void ClientMessage(string message)
+        protected void ClientMessage(string message)
         {
-            if (Irc.currentChannel == null) return;
-            Irc.ClientMessage(message);
+            if (Irc.CurrentChannel == null) return;
+            Irc.ChannelList[Irc.CurrentChannel].ClientMessage(message);
         }
     }
 }

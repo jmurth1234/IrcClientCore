@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <AssemblyName>IrcClientCore</AssemblyName>
     <RootNamespace>IrcClientCore</RootNamespace>
@@ -11,5 +11,11 @@
     <Product>IrcClientCore</Product>
     <ApplicationIcon />
     <StartupObject />
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
 </Project>

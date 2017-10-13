@@ -14,7 +14,7 @@
             }
             else
             {
-                Irc.PartChannel(Irc.currentChannel);
+                Irc.PartChannel(Irc.CurrentChannel);
             }
         }
     }

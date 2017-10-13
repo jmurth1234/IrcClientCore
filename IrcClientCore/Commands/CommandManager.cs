@@ -12,8 +12,8 @@ namespace IrcClientCore.Commands
     {
         public delegate void Command(Irc irc, string[] args);
 
-        private Dictionary<String, BaseCommand> CommandTable = new Dictionary<String, BaseCommand>();
-        public ICollection<string> CommandList => CommandTable.Keys;
+        private Dictionary<String, BaseCommand> _commandTable = new Dictionary<String, BaseCommand>();
+        public ICollection<string> CommandList => _commandTable.Keys;
 
         public Irc Server { get; private set; }
 
@@ -48,7 +48,7 @@ namespace IrcClientCore.Commands
         public void RegisterCommand(string cmd, BaseCommand handler)
         {
             handler.Irc = Server;
-            CommandTable.Add(cmd, handler);
+            _commandTable.Add(cmd, handler);
         }
 
         public string[] GetCompletions(string command, string arg)
@@ -59,21 +59,21 @@ namespace IrcClientCore.Commands
         internal BaseCommand GetCommand(string potentialCommand)
         {
             var cmd = CommandList.Where(command => command.StartsWith(potentialCommand)).ToList();
-
+            var channel = Server.ChannelList[Server.CurrentChannel];
             if (cmd.Count > 1)
             {
-                Server.ClientMessage("Multiple matches found: " + potentialCommand);
-                Server.ClientMessage(String.Join(", ", cmd));
-                Server.ClientMessage("Type /help for a list of commands.");
+                channel.ClientMessage("Multiple matches found: " + potentialCommand);
+                channel.ClientMessage(String.Join(", ", cmd));
+                channel.ClientMessage("Type /help for a list of commands.");
             }
             else if (cmd.Count == 1)
             {
-                return CommandTable[cmd[0]];
+                return _commandTable[cmd[0]];
             }
             else
             {
-                Server.ClientMessage("Unknown Command: " + potentialCommand);
-                Server.ClientMessage("Type /help for a list of commands.");
+                channel.ClientMessage("Unknown Command: " + potentialCommand);
+                channel.ClientMessage("Type /help for a list of commands.");
             }
             return null;
         }
