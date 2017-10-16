@@ -1,4 +1,5 @@
 using IrcClientCore.Commands;
+using IrcClientCore.Handlers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -20,6 +21,7 @@ namespace IrcClientCore
         public ChannelsGroup ChannelList { get; set; }
 
         public CommandManager CommandManager { get; private set; }
+        internal HandlerManager HandlerManager { get; }
 
         private string _currentWhois = "";
         private readonly string[] _whoisCmds = new string[] { "311", "319", "312", "330", "671", "317", "401" };
@@ -51,7 +53,7 @@ namespace IrcClientCore
             }
         }
 
-        public bool IsBouncer { get; private set; }
+        public bool Bouncer { get; internal set; }
 
         protected Irc(IrcServer server)
         {
@@ -59,6 +61,7 @@ namespace IrcClientCore
             ChannelList = new ChannelsGroup(new ObservableCollection<Channel>()) { Server = server.Name };
 
             this.CommandManager = new CommandManager(this);
+            this.HandlerManager = new HandlerManager(this);
 
             IsAuthed = false;
 
@@ -111,8 +114,8 @@ namespace IrcClientCore
         {
             try
             {
-                WriteLine(String.Format("NICK {0}", Server.Username));
-                WriteLine(String.Format("USER {0} {1} * :{2}", Server.Username, "8", Server.Username));
+                await WriteLine(String.Format("NICK {0}", Server.Username));
+                await WriteLine(String.Format("USER {0} {1} * :{2}", Server.Username, "8", Server.Username));
             }
             catch (Exception e)
             {
@@ -159,34 +162,9 @@ namespace IrcClientCore
 
             ReconnectionAttempts = 0;
 
-            if (parsedLine.CommandMessage.Command == "CAP")
-            {
-                if (parsedLine.CommandMessage.Parameters[1] == "LS")
-                {
-                    var requirements = "";
-                    var compatibleFeatues = parsedLine.TrailMessage.TrailingContent;
+            HandlerManager.GetHandler(parsedLine.CommandMessage.Command).HandleLine(parsedLine);
 
-                    if (compatibleFeatues.Contains("znc"))
-                    {
-                        IsBouncer = true;
-                    }
-
-                    if (compatibleFeatues.Contains("znc.in/server-time-iso"))
-                    {
-                        requirements += "znc.in/server-time-iso ";
-                    }
-
-                    if (compatibleFeatues.Contains("multi-prefix"))
-                    {
-                        requirements += "multi-prefix ";
-                    }
-
-
-                    WriteLine("CAP REQ :" + requirements);
-                    WriteLine("CAP END");
-                }
-            }
-            else if (parsedLine.CommandMessage.Command == "JOIN")
+            if (parsedLine.CommandMessage.Command == "JOIN")
             {
                 var channel = parsedLine.TrailMessage.TrailingContent;
                 if (parsedLine.PrefixMessage.Nickname == this.Server.Username)
@@ -324,7 +302,7 @@ namespace IrcClientCore
 
                 ChannelList[channel].Store.AddUsers(list);
 
-                if (!IsBouncer)
+                if (!Bouncer)
                 {
                     ChannelList[channel].Store.SortUsers();
                 }
@@ -506,22 +484,6 @@ namespace IrcClientCore
                     }
                 }
             }
-            else
-            {
-                if (!parsedLine.PrefixMessage.IsUser)
-                {
-                    if (ChannelList.ServerLog == null)
-                    {
-                        await AddChannel("Server");
-                    }
-
-                    Message msg = new Message();
-                    msg.Text = parsedLine.OriginalMessage;
-                    msg.Type = MessageType.Info;
-                    msg.User = "";
-                    ChannelList.ServerLog?.Buffers.Add(msg);
-                }
-            }
         }
 
 
@@ -675,7 +637,7 @@ namespace IrcClientCore
             this.AddMessage(channel, msg);
         }
 
-        public abstract void WriteLine(string str);
+        public abstract Task WriteLine(string str);
         
         public static string ReplaceFirst(string text, string search, string replace)
         {

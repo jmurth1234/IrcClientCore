@@ -10,8 +10,6 @@ namespace IrcClientCore.Commands
 {
     public class CommandManager
     {
-        public delegate void Command(Irc irc, string[] args);
-
         private Dictionary<String, BaseCommand> _commandTable = new Dictionary<String, BaseCommand>();
         public ICollection<string> CommandList => _commandTable.Keys;
 

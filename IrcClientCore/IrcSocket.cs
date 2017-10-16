@@ -77,10 +77,10 @@ namespace IrcClientCore
             }
         }
 
-        public override void WriteLine(string str)
+        public override async Task WriteLine(string str)
         {
-            _clientStreamWriter.WriteLine(str);
-            _clientStreamWriter.Flush();
+            await _clientStreamWriter.WriteLineAsync(str);
+            await _clientStreamWriter.FlushAsync();
         }
     }
 }
