@@ -162,7 +162,12 @@ namespace IrcClientCore
 
             ReconnectionAttempts = 0;
 
-            HandlerManager.GetHandler(parsedLine.CommandMessage.Command).HandleLine(parsedLine);
+            var handlers = HandlerManager.GetHandlers(parsedLine.CommandMessage.Command);
+            foreach (var handler in handlers)
+            {
+                var cont = await handler.HandleLine(parsedLine);
+                if (!cont) break;
+            }
 
             if (parsedLine.CommandMessage.Command == "JOIN")
             {

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace IrcClientCore.Handlers.BuiltIn
 {
     class CapHandler : BaseHandler
     {
-        public override void HandleLine(IrcMessage parsedLine)
+        public override async Task<bool> HandleLine(IrcMessage parsedLine)
         {
             if (parsedLine.CommandMessage.Parameters[1] == "LS")
             {
@@ -28,10 +29,11 @@ namespace IrcClientCore.Handlers.BuiltIn
                     requirements += "multi-prefix ";
                 }
 
-                Irc.WriteLine("CAP REQ :" + requirements);
-                Irc.WriteLine("CAP END");
+                await Irc.WriteLine("CAP REQ :" + requirements);
+                await Irc.WriteLine("CAP END");
             }
 
+            return true;
         }
     }
 }

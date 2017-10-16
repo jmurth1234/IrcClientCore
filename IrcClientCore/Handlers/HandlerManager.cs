@@ -8,8 +8,7 @@ namespace IrcClientCore.Handlers
 {
     class HandlerManager
     {
-        private Dictionary<String, BaseHandler> _handlerTable = new Dictionary<String, BaseHandler>();
-        private ICollection<string> HandlerCommands => _handlerTable.Keys;
+        private ICollection<BaseHandler> Handlers = new List<BaseHandler>();
 
         private Irc Server { get; set; }
 
@@ -26,21 +25,28 @@ namespace IrcClientCore.Handlers
 
         private void RegisterHandler(string command, BaseHandler handler)
         {
-            handler.Irc = Server;
-            _handlerTable.Add(command, handler);
+            RegisterHandler(command, handler, HandlerPriority.MEDIUM);
         }
 
-        internal BaseHandler GetHandler(string potentialCommand)
+        private void RegisterHandler(string command, BaseHandler handler, HandlerPriority priority)
         {
-            var cmd = HandlerCommands.Where(command => command.StartsWith(potentialCommand)).ToList();
-            var channel = Server.ChannelList[Server.CurrentChannel];
+            handler.Irc = Server;
+            handler.Priority = priority;
+            handler.Command = command;
+            Handlers.Add(handler);
+        }
 
-            if (cmd.Count == 1)
+        internal List<BaseHandler> GetHandlers(string potentialCommand)
+        {
+            var handlers = Handlers.Where(handler => handler.Command.Equals(potentialCommand))
+                                   .OrderByDescending(handler => (int) handler.Priority).ToList();
+
+            if (handlers.Count >= 1)
             {
-                return _handlerTable[cmd[0]];
+                return handlers;
             }
 
-            return DefaultHandler;
+            return new List<BaseHandler>() { DefaultHandler };
         }
 
     }
