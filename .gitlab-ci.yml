@@ -3,11 +3,10 @@ stages:
   - build
 before_script:
   - 'dotnet restore'
-  - 'nuget setApiKey -Source https://nuget.rymate.co.uk/ %NugetAPIKey%'
 build:
  stage: build
  script:
   - 'dotnet build'
-  - 'nuget push /builds/nuxt-irc/dotnet-irc-testing/IrcClientCore/bin/Debug/*.nupkg -Source https://nuget.rymate.co.uk/'
+  - 'dotnet nuget push /builds/nuxt-irc/dotnet-irc-testing/IrcClientCore/bin/Debug/*.nupkg -k %NugetAPIKey% --source https://nuget.rymate.co.uk/'
  tags:
   - docker
