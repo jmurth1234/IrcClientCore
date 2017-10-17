@@ -10,7 +10,7 @@ namespace IrcClientCore.Handlers.BuiltIn
     {
         public override Task<bool> HandleLine(IrcMessage parsedLine)
         {
-            Debug.WriteLine(parsedLine.CommandMessage.Command + " - " + receivedData);
+            Debug.WriteLine(parsedLine.CommandMessage.Command + " - " + parsedLine.OriginalMessage);
 
             if (parsedLine.CommandMessage.Parameters.Count > 2)
             {
