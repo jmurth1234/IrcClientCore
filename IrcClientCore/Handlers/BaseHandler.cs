@@ -9,7 +9,7 @@ namespace IrcClientCore.Handlers
     {
         public Irc Irc { get; internal set; }
         public HandlerPriority Priority { get; internal set; }
-        public string Command { get; internal set; }
+        public HashSet<string> Commands { get; internal set; } = new HashSet<string>();
 
         // return true for other handlers to handle this command, false to cancel further processing
         public abstract Task<bool> HandleLine(IrcMessage parsedLine);

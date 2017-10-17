@@ -24,7 +24,6 @@ namespace IrcClientCore
         internal HandlerManager HandlerManager { get; }
 
         private string _currentWhois = "";
-        private readonly string[] _whoisCmds = new string[] { "311", "319", "312", "330", "671", "317", "401" };
 
         public string Buffer;
         public string CurrentChannel { get; set; }
@@ -169,104 +168,7 @@ namespace IrcClientCore
                 if (!cont) break;
             }
 
-            if (parsedLine.CommandMessage.Command == "JOIN")
-            {
-                var channel = parsedLine.TrailMessage.TrailingContent;
-                if (parsedLine.PrefixMessage.Nickname == this.Server.Username)
-                {
-                    AddChannel(channel);
-                }
-
-                if (parsedLine.CommandMessage.Parameters != null)
-                {
-                    channel = parsedLine.CommandMessage.Parameters[0];
-                }
-
-                if ((!Config.Contains(Config.IgnoreJoinLeave)) || (!Config.GetBoolean(Config.IgnoreJoinLeave)))
-                {
-                    Message msg = new Message();
-                    msg.Type = MessageType.Info;
-                    msg.User = parsedLine.PrefixMessage.Nickname;
-
-                    msg.Text = String.Format("({0}) {1}", parsedLine.PrefixMessage.Prefix, "joined the channel");
-                    AddMessage(channel, msg);
-                }
-
-                ChannelList[channel].Store.AddUser(parsedLine.PrefixMessage.Nickname, true);
-            }
-            else if (parsedLine.CommandMessage.Command == "PART")
-            {
-                var channel = parsedLine.TrailMessage.TrailingContent;
-                if (parsedLine.PrefixMessage.Nickname == this.Server.Username)
-                {
-                    RemoveChannel(channel);
-                }
-                else
-                {
-                    if (parsedLine.CommandMessage.Parameters.Count > 0)
-                    {
-                        channel = parsedLine.CommandMessage.Parameters[0];
-                    }
-
-                    if ((!Config.Contains(Config.IgnoreJoinLeave)) || (!Config.GetBoolean(Config.IgnoreJoinLeave)))
-                    {
-
-                        Message msg = new Message();
-                        msg.Type = MessageType.Info;
-                        msg.User = parsedLine.PrefixMessage.Nickname;
-
-                        msg.Text = String.Format("({0}) {1}", parsedLine.PrefixMessage.Prefix, "left the channel");
-                        AddMessage(channel, msg);
-                    }
-
-                    ChannelList[channel].Store.RemoveUser(parsedLine.PrefixMessage.Nickname);
-                }
-            }
-            else if (parsedLine.CommandMessage.Command == "PRIVMSG")
-            {
-                // handle messages to this irc client
-                var destination = parsedLine.CommandMessage.Parameters[0];
-                var content = parsedLine.TrailMessage.TrailingContent;
-
-                if (destination == Server.Username) 
-                {
-                    destination = parsedLine.PrefixMessage.Nickname;
-                }
-
-                if (!ChannelList.Contains(destination))
-                {
-                    AddChannel(destination);
-                }
-
-                Message msg = new Message();
-
-                msg.Type = MessageType.Normal;
-                msg.User = parsedLine.PrefixMessage.Nickname;
-                if (parsedLine.ServerTime != null)
-                {
-                    var time = DateTime.Parse(parsedLine.ServerTime);
-                    msg.Timestamp = time.ToString("HH:mm");
-                }
-
-                if (content.Contains("ACTION"))
-                {
-                    msg.Text = content.Replace("ACTION ", "");
-                    msg.Type = MessageType.Action;
-                }
-                else
-                {
-                    msg.Text = content;
-                }
-
-                if ((parsedLine.TrailMessage.TrailingContent.Contains(Server.Username) || parsedLine.CommandMessage.Parameters[0] == Server.Username))
-                {
-                    msg.Mention = true;
-                }
-
-                AddMessage(destination, msg);
-
-            }
-            else if (parsedLine.CommandMessage.Command == "KICK")
+            if (parsedLine.CommandMessage.Command == "KICK")
             {
                 // handle messages to this irc client
                 var destination = parsedLine.CommandMessage.Parameters[0];
@@ -435,43 +337,6 @@ namespace IrcClientCore
             {
                 RemoveChannel(parsedLine.CommandMessage.Parameters[1]);
                 AddChannel(parsedLine.CommandMessage.Parameters[2]);
-            }
-            else if (_whoisCmds.Any(str => str.Contains(parsedLine.CommandMessage.Command)))
-            {
-                var cmd = parsedLine.CommandMessage.Command;
-                if (_currentWhois == "")
-                {
-                    _currentWhois += "Whois for " + parsedLine.CommandMessage.Parameters[1] + ": \r\n";
-                }
-
-                var whoisLine = "";
-
-                if (cmd == "330")
-                {
-                    whoisLine += parsedLine.CommandMessage.Parameters[1] + " " + parsedLine.TrailMessage.TrailingContent + " " + parsedLine.CommandMessage.Parameters[2] + " ";
-                    _currentWhois += whoisLine + "\r\n";
-
-                }
-                else
-                {
-                    for (int i = 2; i < parsedLine.CommandMessage.Parameters.Count; i++)
-                    {
-                        whoisLine += parsedLine.CommandMessage.Command + " " + parsedLine.CommandMessage.Parameters[i] + " ";
-                    }
-                    _currentWhois += whoisLine + parsedLine.TrailMessage.TrailingContent + "\r\n";
-
-                }
-
-            }
-            else if (parsedLine.CommandMessage.Command == "318")
-            {
-                Console.WriteLine(_currentWhois);
-                Message msg = new Message();
-                msg.Text = _currentWhois;
-                msg.Type = MessageType.Info;
-                AddMessage(CurrentChannel, msg);
-
-                _currentWhois = "";
             }
             else if (parsedLine.CommandMessage.Command == "376")
             {

@@ -15,10 +15,13 @@ namespace IrcClientCore.Handlers.BuiltIn
                 await Irc.AddChannel("Server");
             }
 
-            Message msg = new Message();
-            msg.Text = parsedLine.OriginalMessage;
-            msg.Type = MessageType.Info;
-            msg.User = "";
+            Message msg = new Message
+            {
+                Text = parsedLine.OriginalMessage,
+                Type = MessageType.Info,
+                User = ""
+            };
+
             Debug.WriteLine(parsedLine.OriginalMessage);
             Irc.ChannelList.ServerLog?.Buffers.Add(msg);
             return true;
