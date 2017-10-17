@@ -153,7 +153,7 @@ namespace IrcClientCore
 
             if (receivedData.StartsWith("PING"))
             {
-                WriteLine(receivedData.Replace("PING", "PONG"));
+                await WriteLine(receivedData.Replace("PING", "PONG"));
                 return;
             }
 
