@@ -6,7 +6,7 @@ before_script:
 build:
  stage: build
  script:
-  - 'dotnet build /property:Version=dev-$CI_BUILD_ID'
+  - 'dotnet build /property:Version=1.0.0-dev-$CI_BUILD_ID'
   - 'dotnet nuget push /builds/nuxt-irc/dotnet-irc-testing/IrcClientCore/bin/Debug/*.nupkg -k $NUGET_KEY --source https://nuget.rymate.co.uk/'
  tags:
   - docker
