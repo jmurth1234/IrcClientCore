@@ -15,6 +15,7 @@ namespace IrcClientCore.Handlers
         private BaseHandler DefaultHandler { get; set; }
 
         private readonly string[] _whoisCmds = new string[] { "311", "319", "318", "312", "330", "671", "317", "401" };
+        private readonly string[] _topicCmds = new string[] { "TOPIC", "332" };
 
 
         public HandlerManager(Irc irc)
@@ -23,11 +24,19 @@ namespace IrcClientCore.Handlers
             this.DefaultHandler = new DefaultHandler();
             this.DefaultHandler.Irc = irc;
 
+            // register the default handlers
             RegisterHandler("CAP", new CapHandler());
             RegisterHandler("PRIVMSG", new PrivmsgHandler());
             RegisterHandler("JOIN", new JoinHandler());
             RegisterHandler("PART", new PartHandler());
+            RegisterHandler("KICK", new KickHandler());
+            RegisterHandler("353", new NamesHandler());
+            RegisterHandler("QUIT", new QuitHandler());
+            RegisterHandler("MODE", new ModeHandler());
+            RegisterHandler("376", new ServerJoinedHandler());
+            RegisterHandler("470", new ChannelForwardHandler());
             MultiRegisterHandler(_whoisCmds, new WhoisHandler());
+            MultiRegisterHandler(_topicCmds, new TopicHandler());
         }
 
         private void RegisterHandler(string command, BaseHandler handler)
