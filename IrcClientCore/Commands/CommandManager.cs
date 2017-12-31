@@ -43,6 +43,7 @@ namespace IrcClientCore.Commands
 
             RegisterCommand("/raw", new RawCommand());
         }
+
         public void RegisterCommand(string cmd, BaseCommand handler)
         {
             handler.Irc = Server;
@@ -51,7 +52,15 @@ namespace IrcClientCore.Commands
 
         public string[] GetCompletions(string command, string arg)
         {
-            return GetCommand(command).GetCompletions(arg);
+            var cmd = GetCommand(command);
+            if (cmd == null)
+            {
+                return new string[0];
+            }
+
+            var completions = cmd.GetCompletions(arg);
+
+            return completions != null ? completions : new string[0];
         }
 
         internal BaseCommand GetCommand(string potentialCommand)
