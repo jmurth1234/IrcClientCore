@@ -1,11 +1,15 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
+using System.Runtime.Serialization;
 
 namespace IrcClientCore
 {
+    [DataContract]
     public class Channel
     {
+        [DataMember]
         public string Server { get; set; }
+        [DataMember]
         public string Name { get; set; }
 
         public ChannelStore Store { get; private set; }
