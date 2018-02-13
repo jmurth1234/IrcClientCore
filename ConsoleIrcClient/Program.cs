@@ -18,13 +18,18 @@ namespace ConsoleIrcClient
             new Program().Start();
         }
 
+        /// <summary>
+        /// Main loop for the CLI demo of the IrcClientCore
+        /// </summary>
         private void Start()
         {
             var server = new IrcServer()
             {
                 Name = "Test server",
                 Hostname = ReadLine.Read("Server Hostname: "),
-                Port = Convert.ToInt32(ReadLine.Read("Server Port: ", 6667.ToString())),
+                Port = Convert.ToInt32(ReadLine.Read("Server Port: ", "6667")),
+                Ssl = Convert.ToBoolean(ReadLine.Read("Use SSL: ")),
+                IgnoreCertErrors = true,
                 Username = ReadLine.Read("Username: "),
                 Channels = "#rymate"
             };

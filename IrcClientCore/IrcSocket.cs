@@ -1,6 +1,8 @@
 using System;
 using System.IO;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace IrcClientCore
@@ -8,7 +10,7 @@ namespace IrcClientCore
     public class IrcSocket : Irc
     {
         private TcpClient _conn;
-        private NetworkStream _stream;
+        private Stream _stream;
         private StreamReader _clientStreamReader;
         private StreamWriter _clientStreamWriter;
 
@@ -31,7 +33,17 @@ namespace IrcClientCore
 
                 if (_conn.Connected)
                 {
-                    _stream = _conn.GetStream();
+                    if (Server.Ssl)
+                    {
+                        var sslStream = new SslStream(_conn.GetStream(), false, new RemoteCertificateValidationCallback(CheckCert));
+                        sslStream.AuthenticateAsClient(Server.Hostname);
+                        _stream = sslStream;
+                    }
+                    else
+                    {
+                        _stream = _conn.GetStream();
+                    }
+
                     _clientStreamReader = new StreamReader(_stream);
                     _clientStreamWriter = new StreamWriter(_stream);
 
@@ -49,6 +61,16 @@ namespace IrcClientCore
                 Console.WriteLine(e.Message);
                 Console.WriteLine(e.StackTrace);
             }
+        }
+
+        private bool CheckCert(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            if (Server.IgnoreCertErrors)
+            {
+                return true;
+            }
+
+            return sslPolicyErrors != SslPolicyErrors.None;
         }
 
         public override void DisconnectAsync(string msg = "Powered by WinIRC", bool attemptReconnect = false)
