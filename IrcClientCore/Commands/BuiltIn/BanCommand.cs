@@ -8,13 +8,13 @@ namespace IrcClientCore.Commands
         {
             if (args.Length != 2)
             {
-                Irc.ClientMessage("Wrong params: " + String.Join(" ", args));
+                ClientMessage("Wrong params: " + String.Join(" ", args));
                 return;
             }
 
             string[] modeArgs;
 
-            modeArgs = new string[] { "MODE", Irc.currentChannel, "+b", args[1] + "!*@*" };
+            modeArgs = new string[] { "MODE", Irc.CurrentChannel, "+b", args[1] + "!*@*" };
 
             Irc.CommandManager.GetCommand("/mode").RunCommand(modeArgs);
         }

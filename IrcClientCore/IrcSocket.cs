@@ -1,16 +1,18 @@
 using System;
 using System.IO;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace IrcClientCore
 {
     public class IrcSocket : Irc
     {
-        private TcpClient conn;
-        private NetworkStream stream;
-        private StreamReader clientStreamReader;
-        private StreamWriter clientStreamWriter;
+        private TcpClient _conn;
+        private Stream _stream;
+        private StreamReader _clientStreamReader;
+        private StreamWriter _clientStreamWriter;
 
         public IrcSocket(IrcServer server) : base(server)
         {
@@ -18,28 +20,38 @@ namespace IrcClientCore
 
         public override async void Connect()
         {
-            if (server == null)
+            if (Server == null)
                 return;
 
             IsAuthed = false;
             ReadOrWriteFailed = false;
-            conn = new TcpClient();
-            conn.NoDelay = true;
+            _conn = new TcpClient();
+            _conn.NoDelay = true;
             try
             {
-                await conn.ConnectAsync(server.hostname, server.port);
+                await _conn.ConnectAsync(Server.Hostname, Server.Port);
 
-                if (conn.Connected)
+                if (_conn.Connected)
                 {
-                    stream = conn.GetStream();
-                    clientStreamReader = new StreamReader(stream);
-                    clientStreamWriter = new StreamWriter(stream);
+                    if (Server.Ssl)
+                    {
+                        var sslStream = new SslStream(_conn.GetStream(), false, new RemoteCertificateValidationCallback(CheckCert));
+                        sslStream.AuthenticateAsClient(Server.Hostname);
+                        _stream = sslStream;
+                    }
+                    else
+                    {
+                        _stream = _conn.GetStream();
+                    }
+
+                    _clientStreamReader = new StreamReader(_stream);
+                    _clientStreamWriter = new StreamWriter(_stream);
 
                     AttemptAuth();
 
                     while (true)
                     {
-                        var line = await clientStreamReader.ReadLineAsync();
+                        var line = await _clientStreamReader.ReadLineAsync();
                         await HandleLine(line);
                     }
                 }
@@ -51,11 +63,21 @@ namespace IrcClientCore
             }
         }
 
+        private bool CheckCert(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            if (Server.IgnoreCertErrors)
+            {
+                return true;
+            }
+
+            return sslPolicyErrors != SslPolicyErrors.None;
+        }
+
         public override void DisconnectAsync(string msg = "Powered by WinIRC", bool attemptReconnect = false)
         {
             WriteLine("QUIT :" + msg);
 
-            if (attemptReconnect)
+            if (Server.ShouldReconnect && attemptReconnect)
             {
                 IsReconnecting = true;
                 ReconnectionAttempts++;
@@ -79,8 +101,13 @@ namespace IrcClientCore
 
         public override void WriteLine(string str)
         {
+<<<<<<< HEAD
             clientStreamWriter.WriteLine(str);
             clientStreamWriter.Flush();
+=======
+            await _clientStreamWriter.WriteLineAsync(str);
+            await _clientStreamWriter.FlushAsync();
+>>>>>>> 82c7c8c850f21fb69a505110da8979baa4b2b29d
         }
     }
 }

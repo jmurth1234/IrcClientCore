@@ -15,15 +15,12 @@ namespace IrcClientCore
             {
                 if (_date == null)
                 {
-                    DateTime date = DateTime.Now;
+                    var date = DateTime.Now;
                     _date = date.ToString("HH:mm");
                 }
                 return _date;
             }
-            set
-            {
-                this._date = value;
-            }
+            set => _date = value;
         }
 
         private string _date;
@@ -35,19 +32,13 @@ namespace IrcClientCore
                 {
                     return String.Format("* {0}", _username);
                 }
-                else if (_username == "" )
+                if (_username == "" )
                 {
                     return "*";
                 }
-                else
-                { 
-                    return String.Format("<{0}>", _username);
-                }
+                return String.Format("<{0}>", _username);
             }
-            set
-            {
-                this._username = value;
-            }
+            set => _username = value;
         }
 
         private string _username;

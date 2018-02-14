@@ -1,4 +1,5 @@
 using IrcClientCore.Commands;
+using IrcClientCore.Handlers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,25 +14,18 @@ namespace IrcClientCore
 {
     public abstract class Irc
     {
-        public IrcServer server { get; set; }
-
-        public String BackgroundTaskName {
-            get
-            {
-                return "WinIRCBackgroundTask." + server.name;
-            }
-        }
+        public IrcServer Server { get; set; }
 
         public bool IsAuthed { get; set; }
 
-        public ObservableCollection<Message> ircMessages { get; set; }
-
-        public ServerGroup channelList { get; set; }
+        public ChannelsGroup ChannelList { get; set; }
 
         public CommandManager CommandManager { get; private set; }
+        internal HandlerManager HandlerManager { get; }
 
-        public Dictionary<string, ChannelStore> channelStore { get; set; }
+        private string _currentWhois = "";
 
+<<<<<<< HEAD
         private bool autoReconnect = true;
 
         public Dictionary<string, ObservableCollection<Message>> channelBuffers { get; set; }
@@ -41,10 +35,11 @@ namespace IrcClientCore
 
         public string buffer;
         public string currentChannel { get; set; }
+=======
+        public string Buffer;
+        public string CurrentChannel { get; set; }
+>>>>>>> 82c7c8c850f21fb69a505110da8979baa4b2b29d
         public bool Transferred = false;
-
-        private string lightTextColor;
-        private string chatTextColor;
 
         internal bool IsReconnecting;
 
@@ -56,36 +51,28 @@ namespace IrcClientCore
         public Action<Irc> HandleDisconnect { get; set; }
 
         public string Nickname {
-            get
-            {
-                return server.username;
-            }
+            get => Server.Username;
             set
             {
-                server.username = value;
+                Server.Username = value;
                 WriteLine("NICK " + value);
 
-                foreach (string channel in channelBuffers.Keys)
+                foreach (Channel channel in ChannelList)
                 {
-                    ClientMessage(channel, "Changed username to " + value);
+                    channel.ClientMessage("Changed username to " + value);
                 }
             }
         }
 
-        public bool IsBouncer { get; private set; }
+        public bool Bouncer { get; internal set; }
 
-        public Irc(IrcServer server)
+        protected Irc(IrcServer server)
         {
-            this.server = server;
-            ircMessages = new ObservableCollection<Message>();
-
-            channelList = new ServerGroup(new ObservableCollection<Channel>());
-            channelList.Server = server.name;
-
-            channelBuffers = new Dictionary<string, ObservableCollection<Message>>(StringComparer.OrdinalIgnoreCase);
-            channelStore = new Dictionary<string, ChannelStore>(StringComparer.OrdinalIgnoreCase);
+            this.Server = server;
+            ChannelList = new ChannelsGroup(new ObservableCollection<Channel>()) { Server = server.Name };
 
             this.CommandManager = new CommandManager(this);
+            this.HandlerManager = new HandlerManager(this);
 
             IsAuthed = false;
 
@@ -96,17 +83,17 @@ namespace IrcClientCore
         {
             if (connected && Config.GetBoolean(Config.AutoReconnect))
             {
-                foreach (string channel in channelBuffers.Keys)
+                foreach (Channel channel in ChannelList)
                 {
-                    ClientMessage(channel, "Reconnecting...");
+                    channel.ClientMessage("Reconnecting...");
                 }
                 Connect();
             }
             else
             {
-                foreach (string channel in channelBuffers.Keys)
+                foreach (Channel channel in ChannelList)
                 {
-                    ClientMessage(channel, "Disconnected from IRC");
+                    channel.ClientMessage("Disconnected from IRC");
                 }
                 DisconnectAsync(attemptReconnect: true);
             }
@@ -126,9 +113,9 @@ namespace IrcClientCore
 
             AttemptRegister();
 
-            if (server.password != "")
+            if (Server.Password != "")
             {
-                WriteLine("PASS " + server.password);
+                WriteLine("PASS " + Server.Password);
             }
 
             IsAuthed = true;
@@ -138,8 +125,8 @@ namespace IrcClientCore
         {
             try
             {
-                WriteLine(String.Format("NICK {0}", server.username));
-                WriteLine(String.Format("USER {0} {1} * :{2}", server.username, "8", server.username));
+                await WriteLine(String.Format("NICK {0}", Server.Username));
+                await WriteLine(String.Format("USER {0} {1} * :{2}", Server.Username, "8", Server.Username));
             }
             catch (Exception e)
             {
@@ -152,7 +139,7 @@ namespace IrcClientCore
         {
             if (receivedData.Contains("Nickname is already in use"))
             {
-                this.server.username += "_";
+                this.Server.Username += "_";
                 AttemptAuth();
                 return;
             }
@@ -186,368 +173,11 @@ namespace IrcClientCore
 
             ReconnectionAttempts = 0;
 
-            if (parsedLine.CommandMessage.Command == "CAP")
+            var handlers = HandlerManager.GetHandlers(parsedLine.CommandMessage.Command);
+            foreach (var handler in handlers)
             {
-                if (parsedLine.CommandMessage.Parameters[1] == "LS")
-                {
-                    var requirements = "";
-                    var compatibleFeatues = parsedLine.TrailMessage.TrailingContent;
-
-                    if (compatibleFeatues.Contains("znc"))
-                    {
-                        IsBouncer = true;
-                    }
-
-                    if (compatibleFeatues.Contains("znc.in/server-time-iso"))
-                    {
-                        requirements += "znc.in/server-time-iso ";
-                    }
-
-                    if (compatibleFeatues.Contains("multi-prefix"))
-                    {
-                        requirements += "multi-prefix ";
-                    }
-
-
-                    WriteLine("CAP REQ :" + requirements);
-                    WriteLine("CAP END");
-                }
-            }
-            else if (parsedLine.CommandMessage.Command == "JOIN")
-            {
-                var channel = parsedLine.TrailMessage.TrailingContent;
-                if (parsedLine.PrefixMessage.Nickname == this.server.username)
-                {
-                    AddChannel(channel);
-                }
-
-                if (parsedLine.CommandMessage.Parameters != null)
-                {
-                    channel = parsedLine.CommandMessage.Parameters[0];
-                }
-
-                if ((!Config.Contains(Config.IgnoreJoinLeave)) || (!Config.GetBoolean(Config.IgnoreJoinLeave)))
-                {
-                    Message msg = new Message();
-                    msg.Type = MessageType.Info;
-                    msg.User = parsedLine.PrefixMessage.Nickname;
-
-                    msg.Text = String.Format("({0}) {1}", parsedLine.PrefixMessage.Prefix, "joined the channel");
-                    AddMessage(channel, msg);
-                }
-
-                channelStore[channel].AddUser(parsedLine.PrefixMessage.Nickname, true);
-            }
-            else if (parsedLine.CommandMessage.Command == "PART")
-            {
-                var channel = parsedLine.TrailMessage.TrailingContent;
-                if (parsedLine.PrefixMessage.Nickname == this.server.username)
-                {
-                    RemoveChannel(channel);
-                }
-                else
-                {
-                    if (parsedLine.CommandMessage.Parameters.Count > 0)
-                    {
-                        channel = parsedLine.CommandMessage.Parameters[0];
-                    }
-
-                    if ((!Config.Contains(Config.IgnoreJoinLeave)) || (!Config.GetBoolean(Config.IgnoreJoinLeave)))
-                    {
-
-                        Message msg = new Message();
-                        msg.Type = MessageType.Info;
-                        msg.User = parsedLine.PrefixMessage.Nickname;
-
-                        msg.Text = String.Format("({0}) {1}", parsedLine.PrefixMessage.Prefix, "left the channel");
-                        AddMessage(channel, msg);
-                    }
-
-                    channelStore[channel].RemoveUser(parsedLine.PrefixMessage.Nickname);
-                }
-            }
-            else if (parsedLine.CommandMessage.Command == "PRIVMSG")
-            {
-                // handle messages to this irc client
-                var destination = parsedLine.CommandMessage.Parameters[0];
-                var content = parsedLine.TrailMessage.TrailingContent;
-
-                if (destination == server.username) 
-                {
-                    destination = parsedLine.PrefixMessage.Nickname;
-                }
-
-                if (!channelList.Contains(destination))
-                {
-                    AddChannel(destination);
-                }
-
-                Message msg = new Message();
-
-                msg.Type = MessageType.Normal;
-                msg.User = parsedLine.PrefixMessage.Nickname;
-                if (parsedLine.ServerTime != null)
-                {
-                    var time = DateTime.Parse(parsedLine.ServerTime);
-                    msg.Timestamp = time.ToString("HH:mm");
-                }
-
-                if (content.Contains("ACTION"))
-                {
-                    msg.Text = content.Replace("ACTION ", "");
-                    msg.Type = MessageType.Action;
-                }
-                else
-                {
-                    msg.Text = content;
-                }
-
-                if ((parsedLine.TrailMessage.TrailingContent.Contains(server.username) || parsedLine.CommandMessage.Parameters[0] == server.username))
-                {
-                    msg.Mention = true;
-                }
-
-                AddMessage(destination, msg);
-
-            }
-            else if (parsedLine.CommandMessage.Command == "KICK")
-            {
-                // handle messages to this irc client
-                var destination = parsedLine.CommandMessage.Parameters[0];
-                var reciever = parsedLine.CommandMessage.Parameters[1];
-                var content = parsedLine.TrailMessage.TrailingContent;
-                if (!channelList.Contains(destination))
-                {
-                    AddChannel(destination);
-                }
-
-                Message msg = new Message();
-
-                msg.Type = MessageType.Info;
-
-                if (reciever == server.username)
-                {
-                    msg.User = parsedLine.PrefixMessage.Nickname;
-                    msg.Text = "kicked you from the channel: " + content;
-                }
-                else
-                {
-                    msg.User = parsedLine.PrefixMessage.Nickname;
-                    msg.Text = String.Format("kicked {0} from the channel: {1}", reciever, content);
-                }
-
-                AddMessage(destination, msg);
-            }
-            else if (parsedLine.CommandMessage.Command == "353")
-            {
-                // handle /NAMES
-                var list = parsedLine.TrailMessage.TrailingContent.Split(' ').ToList();
-                var channel = parsedLine.CommandMessage.Parameters[2];
-
-                if (!channelList.Contains(channel))
-                {
-                    await AddChannel(channel);
-                }
-
-                channelStore[channel].AddUsers(list);
-
-                if (!IsBouncer)
-                {
-                    channelStore[channel].SortUsers();
-                }
-            }
-            else if (parsedLine.CommandMessage.Command == "332")
-            {
-                // handle initial topic recieve
-                var topic = parsedLine.TrailMessage.TrailingContent;
-                var channel = parsedLine.CommandMessage.Parameters[1];
-
-                if (!channelList.Contains(channel))
-                {
-                    await AddChannel(channel);
-                }
-
-                Message msg = new Message();
-                msg.Type = MessageType.Info;
-
-                msg.User = "";
-                msg.Text = String.Format("Topic for channel {0}: {1}", channel, topic);
-                AddMessage(channel, msg);
-                channelStore[channel].SetTopic(topic);
-            }
-            else if (parsedLine.CommandMessage.Command == "TOPIC")
-            {
-                // handle topic recieved
-                var topic = parsedLine.TrailMessage.TrailingContent;
-                var channel = parsedLine.CommandMessage.Parameters[0];
-
-                if (!channelList.Contains(channel))
-                {
-                    await AddChannel(channel);
-                }
-
-                Message msg = new Message();
-                msg.Type = MessageType.Info;
-
-                msg.User = "";
-                msg.Text = String.Format("Topic for channel {0}: {1}", channel, topic);
-                AddMessage(channel, msg);
-                channelStore[channel].SetTopic(topic);
-            }
-            else if (parsedLine.CommandMessage.Command == "QUIT")
-            {
-                var username = parsedLine.PrefixMessage.Nickname;
-                foreach (var channel in channelList)
-                {
-                    var users = channelStore[channel.Name];
-                    if (users.HasUser(username))
-                    {
-                        if ((!Config.Contains(Config.IgnoreJoinLeave)) || (!Config.GetBoolean(Config.IgnoreJoinLeave)))
-                        {
-                            Message msg = new Message();
-                            msg.Type = MessageType.Info;
-                            msg.User = parsedLine.PrefixMessage.Nickname;
-                            msg.Text = String.Format("({0}) {1}: {2}", parsedLine.PrefixMessage.Prefix, "quit the server", parsedLine.TrailMessage.TrailingContent);
-                            AddMessage(channel.Name, msg);
-                        }
-
-                        users.RemoveUser(username);
-                    }
-                }
-            }
-            else if (parsedLine.CommandMessage.Command == "MODE")
-            {
-                Console.WriteLine(parsedLine.CommandMessage.Command + " - " + receivedData);
-
-                if (parsedLine.CommandMessage.Parameters.Count > 2)
-                {
-                    var channel = parsedLine.CommandMessage.Parameters[0];
-
-                    if (parsedLine.CommandMessage.Parameters.Count == 3)
-                    {
-                        string currentPrefix = channelStore[channel].GetPrefix(parsedLine.CommandMessage.Parameters[2]);
-                        string prefix = "";
-                        string mode = parsedLine.CommandMessage.Parameters[1];
-                        if (mode == "+o")
-                        {
-                            if (currentPrefix.Length > 0 && currentPrefix[0] == '+')
-                            {
-                                prefix = "@+";
-                            }
-                            else
-                            {
-                                prefix = "@";
-                            }
-                        }
-                        else if (mode == "-o")
-                        {
-                            if (currentPrefix.Length > 0 && currentPrefix[1] == '+')
-                            {
-                                prefix = "+";
-                            }
-                        }
-                        else if (mode == "+v")
-                        {
-                            if (currentPrefix.Length > 0 && currentPrefix[0] == '@')
-                            {
-                                prefix = "@+";
-                            }
-                            else
-                            {
-                                prefix = "+";
-                            }
-                        }
-                        else if (mode == "-v")
-                        {
-                            if (currentPrefix.Length > 0 && currentPrefix[0] == '@')
-                            {
-                                prefix = "@";
-                            }
-                            else
-                            {
-                                prefix = "";
-                            }
-                        }
-
-                        channelStore[channel].ChangePrefix(parsedLine.CommandMessage.Parameters[2], prefix);
-                    }
-
-                    ClientMessage(channel, "Mode change: " + String.Join(" ", parsedLine.CommandMessage.Parameters));
-                }
-            }
-            else if (parsedLine.CommandMessage.Command == "470")
-            {
-                RemoveChannel(parsedLine.CommandMessage.Parameters[1]);
-                AddChannel(parsedLine.CommandMessage.Parameters[2]);
-            }
-            else if (WhoisCmds.Any(str => str.Contains(parsedLine.CommandMessage.Command)))
-            {
-                var cmd = parsedLine.CommandMessage.Command;
-                if (currentWhois == "")
-                {
-                    currentWhois += "Whois for " + parsedLine.CommandMessage.Parameters[1] + ": \r\n";
-                }
-
-                var whoisLine = "";
-
-                if (cmd == "330")
-                {
-                    whoisLine += parsedLine.CommandMessage.Parameters[1] + " " + parsedLine.TrailMessage.TrailingContent + " " + parsedLine.CommandMessage.Parameters[2] + " ";
-                    currentWhois += whoisLine + "\r\n";
-
-                }
-                else
-                {
-                    for (int i = 2; i < parsedLine.CommandMessage.Parameters.Count; i++)
-                    {
-                        whoisLine += parsedLine.CommandMessage.Command + " " + parsedLine.CommandMessage.Parameters[i] + " ";
-                    }
-                    currentWhois += whoisLine + parsedLine.TrailMessage.TrailingContent + "\r\n";
-
-                }
-
-            }
-            else if (parsedLine.CommandMessage.Command == "318")
-            {
-                Console.WriteLine(currentWhois);
-                Message msg = new Message();
-                msg.Text = currentWhois;
-                msg.Type = MessageType.Info;
-                AddMessage(currentChannel, msg);
-
-                currentWhois = "";
-            }
-            else if (parsedLine.CommandMessage.Command == "376")
-            {
-                if (server.nickservPassword != null && server.nickservPassword != "")
-                {
-                    SendMessage("nickserv", "identify " + server.nickservPassword);
-                }
-
-                if (server.channels != null && server.channels != "")
-                {
-                    var channelsList = server.channels.Split(',');
-                    foreach (string channel in channelsList)
-                    {
-                        JoinChannel(channel);
-                    }
-                }
-            }
-            else
-            {
-                if (!parsedLine.PrefixMessage.IsUser)
-                {
-                    if (!channelList.Contains("Server"))
-                    {
-                        await AddChannel("Server");
-                    }
-
-                    Message msg = new Message();
-                    msg.Text = parsedLine.OriginalMessage;
-                    msg.Type = MessageType.Info;
-                    msg.User = "";
-                    AddMessage("Server", msg);
-                }
+                var cont = await handler.HandleLine(parsedLine);
+                if (!cont) break;
             }
         }
 
@@ -558,10 +188,10 @@ namespace IrcClientCore
 
             msg.Text = message;
             msg.Type = MessageType.Action;
-            msg.User = server.username;
-            AddMessage(currentChannel, msg);
+            msg.User = Server.Username;
+            AddMessage(CurrentChannel, msg);
 
-            WriteLine(String.Format("PRIVMSG {0} :\u0001ACTION {1}\u0001", currentChannel, message));
+            WriteLine(String.Format("PRIVMSG {0} :\u0001ACTION {1}\u0001", CurrentChannel, message));
         }
 
         public void SendMessage(string channel, string message)
@@ -569,19 +199,19 @@ namespace IrcClientCore
             Message msg = new Message();
 
             msg.Text = message;
-            msg.User = server.username;
+            msg.User = Server.Username;
             msg.Type = MessageType.Normal;
 
-            if (channelBuffers.Keys.Contains(channel))
-                channelBuffers[channel].Add(msg);
+            if (ChannelList.Contains(channel))
+                ChannelList[channel].Buffers.Add(msg);
 
             WriteLine(String.Format("PRIVMSG {0} :{1}", channel, message));
         }
 
         public string GetChannelTopic(string channel)
         {
-            if (channelStore.ContainsKey(channel))
-                return channelStore[channel].Topic;
+            if (ChannelList.Contains(channel))
+                return ChannelList[channel].Store.Topic;
 
             return "";
         }
@@ -602,12 +232,12 @@ namespace IrcClientCore
             Message msg = new Message();
 
             msg.Text = message;
-            msg.User = server.username;
+            msg.User = Server.Username;
             msg.Type = MessageType.Normal;
 
-            AddMessage(currentChannel, msg);
+            AddMessage(CurrentChannel, msg);
 
-            WriteLine(String.Format("PRIVMSG {0} :{1}", currentChannel, message));
+            WriteLine(String.Format("PRIVMSG {0} :{1}", CurrentChannel, message));
         }
 
         public async void AddError(String message)
@@ -624,17 +254,17 @@ namespace IrcClientCore
 
         public async void AddMessage(string channel, Message msg)
         {
-            if (server == null)
+            if (Server == null)
             {
                 return;
             }
 
-            if (!channelBuffers.ContainsKey(channel))
+            if (!ChannelList.Contains(channel))
             {
                 await AddChannel(channel);
             }
 
-            channelBuffers[channel].Add(msg);
+            ChannelList[channel].Buffers.Add(msg);
         }
 
         public async Task<bool> AddChannel(string channel)
@@ -644,19 +274,16 @@ namespace IrcClientCore
                 return false;
             }
 
-            if (!channelBuffers.Keys.Contains(channel) && !channelStore.Keys.Contains(channel) && !channelList.Contains(channel))
+            if (!ChannelList.Contains(channel))
             {
-                channelStore.Add(channel, new ChannelStore(channel));
-                channelBuffers.Add(channel, new ObservableCollection<Message>());
-
                 var comparer = Comparer<String>.Default;
 
                 int i = 0;
 
-                while (i < channelList.Count && comparer.Compare(channelList[i].Name.ToLower(), channel.ToLower()) < 0)
+                while (i < ChannelList.Count && comparer.Compare(ChannelList[i].Name.ToLower(), channel.ToLower()) < 0)
                     i++;
 
-                channelList.Insert(i, channel);
+                ChannelList.Insert(i, channel);
             }
 
             await Task.Delay(1);
@@ -666,20 +293,18 @@ namespace IrcClientCore
                 Config.SetBoolean(Config.SwitchOnJoin, true);
             }
 
-            return channelList.Contains(channel);
+            return ChannelList.Contains(channel);
         }
 
         public void RemoveChannel(string channel)
         {
-            if (channelBuffers.Keys.Contains(channel))
+            if (ChannelList.Contains(channel))
             {
-                channelBuffers.Remove(channel);
-                channelList.Remove(channel);
-                channelStore.Remove(channel);
+                ChannelList.Remove(channel);
 
-                if (currentChannel == channel)
+                if (CurrentChannel == channel)
                 {
-                    currentChannel = "";
+                    CurrentChannel = "";
                 }
             }
         }
@@ -691,10 +316,9 @@ namespace IrcClientCore
                 return;
             }
 
-            if (channelBuffers.Keys.Contains(channel))
+            if (ChannelList.Contains(channel))
             {
-                currentChannel = channel;
-                ircMessages = channelBuffers[channel];
+                CurrentChannel = channel;
             }
         }
 
@@ -708,6 +332,7 @@ namespace IrcClientCore
             this.AddMessage(channel, msg);
         }
 
+<<<<<<< HEAD
         public void ClientMessage(string text)
         {
             Message msg = new Message();
@@ -719,6 +344,9 @@ namespace IrcClientCore
         }
 
         public abstract void WriteLine(string str);
+=======
+        public abstract Task WriteLine(string str);
+>>>>>>> 82c7c8c850f21fb69a505110da8979baa4b2b29d
         
         public static string ReplaceFirst(string text, string search, string replace)
         {
@@ -732,12 +360,12 @@ namespace IrcClientCore
 
         public ObservableCollection<string> GetChannelUsers(string channel)
         {
-            if (!channelStore.ContainsKey(channel))
+            if (!ChannelList.Contains(channel))
             {
                 return new ObservableCollection<string>();
             }
 
-            var store = channelStore[channel];
+            var store = ChannelList[channel].Store;
 
             if (store.SortedUsers.Count == 0)
                 store.SortUsers();
@@ -747,7 +375,12 @@ namespace IrcClientCore
 
         public ObservableCollection<string> GetRawUsers(string channel)
         {
-            return channelStore[channel].RawUsers;
+            if (!ChannelList.Contains(channel))
+            {
+                return new ObservableCollection<string>();
+            }
+
+            return  ChannelList[channel].Store.RawUsers;
         }
 
     }

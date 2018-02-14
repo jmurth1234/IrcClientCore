@@ -6,7 +6,7 @@
         {
             if ((args.Length < 3) || (args.Length > 2 && !args[1].StartsWith("#")))
             {
-                Irc.ClientMessage("Command too short!");
+                ClientMessage("Command too short!");
                 return;
             }
 
@@ -23,7 +23,7 @@
             }
             else
             {
-                modeLine += Irc.currentChannel + " " + args[1];
+                modeLine += Irc.CurrentChannel + " " + args[1];
 
                 if (args.Length == 3)
                 {

@@ -82,7 +82,7 @@ namespace IrcClientCore
         /// <summary>
         /// The original message
         /// </summary>
-        private string originalMessage;
+        private string _originalMessage;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MessagePrefix"/> class.
@@ -90,7 +90,7 @@ namespace IrcClientCore
         /// <param name="message">The message.</param>
         public MessagePrefix(string message)
         {
-            this.originalMessage = message;
+            this._originalMessage = message;
 
             if (!this.IsPrefixed)
             {
@@ -120,7 +120,7 @@ namespace IrcClientCore
         {
             get
             {
-                return this.originalMessage.StartsWith(":");
+                return this._originalMessage.StartsWith(":");
             }
         }
 

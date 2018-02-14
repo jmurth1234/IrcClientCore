@@ -10,72 +10,86 @@ namespace ConsoleIrcClient
 {
     public class Program
     {
+<<<<<<< HEAD
         private ObservableCollection<Message> channelBuffers;
         private Irc socket;
+=======
+        private ObservableCollection<Message> _channelBuffers;
+        private Irc _socket;
+>>>>>>> 82c7c8c850f21fb69a505110da8979baa4b2b29d
 
         public static void Main(string[] args)
         {
             new Program().Start();
         }
 
+        /// <summary>
+        /// Main loop for the CLI demo of the IrcClientCore
+        /// </summary>
         private void Start()
         {
-            IrcServer server = new IrcServer()
+            var server = new IrcServer()
             {
-                name = "Test server",
-                hostname = ReadLine.Read("Server Hostname: "),
-                port = Convert.ToInt32(ReadLine.Read("Server Port: ", 6667.ToString())),
-                username = ReadLine.Read("Username: "),
-                channels = "#rymate"
+                Name = "Test server",
+                Hostname = ReadLine.Read("Server Hostname: "),
+                Port = Convert.ToInt32(ReadLine.Read("Server Port: ", "6667")),
+                Ssl = Convert.ToBoolean(ReadLine.Read("Use SSL: ")),
+                IgnoreCertErrors = true,
+                Username = ReadLine.Read("Username: "),
+                Channels = "#rymate"
             };
 
             ReadLine.PasswordMode = true;
+<<<<<<< HEAD
             
             if (server.hostname.Contains("znc")) server.password += server.username + ":";
             server.password += ReadLine.Read("Password: ");
+=======
+            if (server.Hostname.Contains("znc")) server.Password += server.Username + ":";
+            server.Password += ReadLine.Read("Password: ");
+>>>>>>> 82c7c8c850f21fb69a505110da8979baa4b2b29d
             ReadLine.PasswordMode = false;
 
-            socket = new IrcSocket(server);
+            _socket = new IrcSocket(server);
 
-            socket.Connect();
+            _socket.Connect();
 
-            CommandManager handler = socket.CommandManager;
+            var handler = _socket.CommandManager;
 
             handler.RegisterCommand("/switch", new SwitchCommand(this));
 
             ReadLine.AutoCompletionHandler = (text, index) =>
             {
+                var array = text.Split(" ");
+
                 if (text.StartsWith("/"))
                 {
-                    var array = text.Split(" ");
                     var current = array[0];
 
                     if (array.Length > 1)
                     {
-                        return handler.GetCompletions(array[0], array.Last());
+                        var completions = handler.GetCompletions(array[0], array.Last());
+                        return completions.Length > 0 ? completions : GetUserCompletions(text);
                     }
-                    else
-                    {
-                        var commands = handler.CommandList.Where(cmd => cmd.StartsWith(current));
-                        return commands.ToArray();
-                    }
+
+                    var commands = handler.CommandList.Where(cmd => cmd.StartsWith(current));
+                    return commands.Select(command => command.Replace("/", "")).ToArray();
                 }
-                else if (((text.StartsWith("/") && index > 0) || !text.StartsWith("/")) && socket.currentChannel != null)
+
+                if ((text.StartsWith("/") && index > 0 || !text.StartsWith("/")) && _socket.CurrentChannel != null)
                 {
-                    var users = socket.GetRawUsers(socket.currentChannel);
-                    var current = text.Split(" ").Last();
-                    return users.Where(cmd => cmd.StartsWith(current)).ToArray();
+                    return GetUserCompletions(text);
                 }
 
                 return new string[0];
             };
 
-            SwitchChannel("Server");
+            SwitchChannel("");
 
-            while (!socket.ReadOrWriteFailed)
+            while (!_socket.ReadOrWriteFailed)
             {
-                var prefix = socket.currentChannel != null
-                    ? $"[{socket.currentChannel} ({socket.GetChannelUsers(socket.currentChannel).Count})] "
+                var prefix = _socket.CurrentChannel != null
+                    ? $"[{_socket.CurrentChannel} ({_socket.GetChannelUsers(_socket.CurrentChannel).Count})] "
                     : "";
 
                 var line = ReadLine.Read($"{prefix}> "); // Get string from user
@@ -84,19 +98,35 @@ namespace ConsoleIrcClient
             }
         }
 
+        private string[] GetUserCompletions(string text)
+        {
+            var users = _socket.GetRawUsers(_socket.CurrentChannel);
+            var current = text.Split(" ").Last();
+            return users.Where(cmd => cmd.StartsWith(current)).ToArray();
+        }
+
         internal void SwitchChannel(string channel)
         {
-            if (channelBuffers != null)
+            if (_channelBuffers != null)
             {
-                channelBuffers.CollectionChanged -= ChannelBuffersOnCollectionChanged;
+                _channelBuffers.CollectionChanged -= ChannelBuffersOnCollectionChanged;
+            }
+            _socket.CurrentChannel = channel;
+
+            if (channel == "")
+            {
+                _channelBuffers = _socket.ChannelList.ServerLog.Buffers;
+            }
+            else
+            {
+                _channelBuffers = _socket.ChannelList[_socket.CurrentChannel].Buffers;
+                _socket.ChannelList[_socket.CurrentChannel].Store.SortUsers();
+
             }
 
-            socket.currentChannel = channel;
-            channelBuffers = socket.channelBuffers[socket.currentChannel];
-            socket.channelStore[socket.currentChannel].SortUsers();
-            PrintMessages(channelBuffers);
+            PrintMessages(_channelBuffers);
 
-            channelBuffers.CollectionChanged += ChannelBuffersOnCollectionChanged;
+            _channelBuffers.CollectionChanged += ChannelBuffersOnCollectionChanged;
         }
 
         private void ChannelBuffersOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -104,7 +134,7 @@ namespace ConsoleIrcClient
             PrintMessages(args.NewItems.OfType<Message>());
         }
 
-        private void PrintMessages(IEnumerable<Message> messages)
+        private static void PrintMessages(IEnumerable<Message> messages)
         {
             foreach (var message in messages)
             {
@@ -115,26 +145,28 @@ namespace ConsoleIrcClient
 
     internal class SwitchCommand : BaseCommand
     {
-        private Program program;
+        private readonly Program _program;
 
         public SwitchCommand(Program program)
         {
-            this.program = program;
+            this._program = program;
         }
 
         public override void RunCommand(string[] args)
         {
             if (args.Length != 2)
             {
+                _program.SwitchChannel("");
+                ClientMessage("List of channels: " + GetCompletions(""));
                 return;
             }
 
-            program.SwitchChannel(args[1]);
+            _program.SwitchChannel(args[1]);
         }
 
         public override string[] GetCompletions(string word)
         {
-            var channels = Irc.channelList.Select(channel => channel.Name);
+            var channels = Irc.ChannelList.Select(channel => channel.Name);
             var completions = channels.Where(name => name.ToLower().Contains(word.ToLower()));
             return completions.ToArray();
         }

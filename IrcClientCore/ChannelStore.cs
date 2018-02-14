@@ -27,13 +27,13 @@ namespace IrcClientCore
                 TopicSetEvent?.Invoke(value);
             }
         }
-        public string Name { get; private set; }
+        public Channel Channel { get; private set; }
 
         public event Action<string> TopicSetEvent;
 
-        public ChannelStore(String name)
+        public ChannelStore(Channel channel)
         {
-            this.Name = name;
+            this.Channel = channel;
             this.Users = new ObservableCollection<User>();
             this.RawUsers = new ObservableCollection<string>();
             this.SortedUsers = new ObservableCollection<string>();
@@ -209,38 +209,6 @@ namespace IrcClientCore
         {
             this.Topic = topic;
         }
-    }
-
-    public class User
-    {
-        public string Prefix
-        {
-            get
-            {
-                string prefix = "";
-
-                if (FullUsername.Length > 2)
-                {
-                    prefix = FullUsername[0] + "" + FullUsername[1];
-                }
-                else if (FullUsername.Length > 1)
-                {
-                    prefix = FullUsername[0] + "";
-                }
-
-                return prefix;
-            }
-        }
-
-        public string FullUsername { get; set; }
-
-        public string Nick => FullUsername.Replace("~", "").Replace("&", "").Replace("@", "").Replace("%", "").Replace("+", "");
-
-        public override string ToString()
-        {
-            return Nick;
-        }
-
     }
 
 }

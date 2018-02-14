@@ -5,7 +5,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <AssemblyName>IrcClientCore</AssemblyName>
     <RootNamespace>IrcClientCore</RootNamespace>
-    <PackageId>IrcClientCore</PackageId>
+    <PackageId>Rymate.IrcClientCore</PackageId>
     <Authors>rymate1234</Authors>
     <Company>N/A</Company>
     <Product>IrcClientCore</Product>
@@ -17,5 +17,12 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>2.0</OldToolsVersion>
+<<<<<<< HEAD
+=======
+    <Version>1.0.0</Version>
+>>>>>>> 82c7c8c850f21fb69a505110da8979baa4b2b29d
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Handlers\HandlerEventArgs.cs" />
+  </ItemGroup>
 </Project>

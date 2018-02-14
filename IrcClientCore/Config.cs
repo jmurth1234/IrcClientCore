@@ -5,7 +5,7 @@ namespace IrcClientCore
 {
     public static class Config
     {
-        public static Dictionary<string, object> roamingSettings = new Dictionary<string, object>();
+        public static Dictionary<string, object> RoamingSettings = new Dictionary<string, object>();
         
         // behaviour settings
         public const string UserListClick = "userlistclick";
@@ -15,7 +15,7 @@ namespace IrcClientCore
         // connection settings
         public const string DefaultUsername = "defaultusername";
         public const string AutoReconnect = "autoreconnect";
-        public const string IgnoreSSL = "ignoressl";
+        public const string IgnoreSsl = "ignoressl";
 
         // display settings
         public const string DarkTheme = "darktheme";
@@ -33,29 +33,29 @@ namespace IrcClientCore
 
         public static bool Contains(string key)
         {
-            return roamingSettings.ContainsKey(key);
+            return RoamingSettings.ContainsKey(key);
         }
 
         public static void SetString(string key, string value)
         {
-            roamingSettings[key] = value;
+            RoamingSettings[key] = value;
         }
 
         public static void SetInt(string key, int value)
         {
-            roamingSettings[key] = value;
+            RoamingSettings[key] = value;
         }
 
         public static void SetBoolean(string key, bool value)
         {
-            roamingSettings[key] = value;
+            RoamingSettings[key] = value;
         }
 
         public static bool GetBoolean(string key, bool def = false)
         {
-            if (Contains(key) && roamingSettings[key] is bool)
+            if (Contains(key) && RoamingSettings[key] is bool)
             {
-                return (bool) roamingSettings[key];
+                return (bool) RoamingSettings[key];
             }
             else
             {
@@ -65,9 +65,9 @@ namespace IrcClientCore
 
         public static string GetString(string key, string def = "")
         {
-            if (Contains(key) && roamingSettings[key] is string)
+            if (Contains(key) && RoamingSettings[key] is string)
             {
-                return roamingSettings[key] as string; 
+                return RoamingSettings[key] as string; 
             }
             else
             {
@@ -77,9 +77,9 @@ namespace IrcClientCore
 
         public static int GetInt(string key, int def = 0)
         {
-            if (Contains(key) && roamingSettings[key] is int)
+            if (Contains(key) && RoamingSettings[key] is int)
             {
-                return (int) roamingSettings[key];
+                return (int) RoamingSettings[key];
             }
             else
             {
@@ -89,7 +89,7 @@ namespace IrcClientCore
 
         public static void RemoveKey(string key)
         {
-            roamingSettings.Remove(key);
+            RoamingSettings.Remove(key);
         }
     }
 }

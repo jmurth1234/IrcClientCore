@@ -8,18 +8,18 @@ namespace IrcClientCore.Commands
         {
             if (args.Length != 2)
             {
-                Irc.ClientMessage("Wrong params: " + String.Join(" ", args));
+                ClientMessage("Wrong params: " + String.Join(" ", args));
                 return;
             }
 
             string[] modeArgs;
             if (args[0].ToLower().Contains("deop"))
             {
-                modeArgs = new string[] { "MODE", Irc.currentChannel, "-o", args[1] };
+                modeArgs = new string[] { "MODE", Irc.CurrentChannel, "-o", args[1] };
             }
             else
             {
-                modeArgs = new string[] { "MODE", Irc.currentChannel, "+o", args[1] };
+                modeArgs = new string[] { "MODE", Irc.CurrentChannel, "+o", args[1] };
             }
 
             Irc.CommandManager.GetCommand("/mode").RunCommand(modeArgs);

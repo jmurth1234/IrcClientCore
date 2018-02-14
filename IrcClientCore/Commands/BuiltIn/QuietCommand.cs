@@ -8,18 +8,18 @@ namespace IrcClientCore.Commands
         {
             if (args.Length != 2)
             {
-                Irc.ClientMessage("Wrong params: " + String.Join(" ", args));
+                ClientMessage("Wrong params: " + String.Join(" ", args));
                 return;
             }
 
             string[] modeArgs;
             if (args[0].ToLower().Contains("unmute"))
             {
-                modeArgs = new string[] { "MODE", Irc.currentChannel, "-q", args[1] + "!*@*" };
+                modeArgs = new string[] { "MODE", Irc.CurrentChannel, "-q", args[1] + "!*@*" };
             }
             else
             {
-                modeArgs = new string[] { "MODE", Irc.currentChannel, "+q", args[1] + "!*@*" };
+                modeArgs = new string[] { "MODE", Irc.CurrentChannel, "+q", args[1] + "!*@*" };
             }
 
             Irc.CommandManager.GetCommand("/mode").RunCommand(modeArgs);
