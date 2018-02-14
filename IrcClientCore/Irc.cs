@@ -40,7 +40,7 @@ namespace IrcClientCore
         private string[] WhoisCmds = new string[] { "311", "319", "312", "330", "671", "317", "401" };
 
         public string buffer;
-        public string currentChannel;
+        public string currentChannel { get; set; }
         public bool Transferred = false;
 
         private string lightTextColor;
@@ -50,6 +50,7 @@ namespace IrcClientCore
 
         public bool IsConnected = false;
         internal int ReconnectionAttempts;
+
         public bool ReadOrWriteFailed { get; internal set; }
 
         public Action<Irc> HandleDisconnect { get; set; }
@@ -133,7 +134,7 @@ namespace IrcClientCore
             IsAuthed = true;
         }
 
-        private void AttemptRegister()
+        private async void AttemptRegister()
         {
             try
             {
@@ -177,7 +178,7 @@ namespace IrcClientCore
 
             if (receivedData.StartsWith("PING"))
             {
-                await WriteLine(receivedData.Replace("PING", "PONG"));
+                WriteLine(receivedData.Replace("PING", "PONG"));
                 return;
             }
 
@@ -717,7 +718,7 @@ namespace IrcClientCore
             this.AddMessage(currentChannel, msg);
         }
 
-        public abstract Task WriteLine(string str);
+        public abstract void WriteLine(string str);
         
         public static string ReplaceFirst(string text, string search, string replace)
         {

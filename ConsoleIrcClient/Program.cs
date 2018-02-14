@@ -11,7 +11,7 @@ namespace ConsoleIrcClient
     public class Program
     {
         private ObservableCollection<Message> channelBuffers;
-        private IrcSocket socket;
+        private Irc socket;
 
         public static void Main(string[] args)
         {
@@ -28,7 +28,9 @@ namespace ConsoleIrcClient
                 username = ReadLine.Read("Username: "),
                 channels = "#rymate"
             };
+
             ReadLine.PasswordMode = true;
+            
             if (server.hostname.Contains("znc")) server.password += server.username + ":";
             server.password += ReadLine.Read("Password: ");
             ReadLine.PasswordMode = false;
