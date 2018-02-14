@@ -29,8 +29,8 @@ namespace IrcClientCore.Handlers.BuiltIn
                     requirements += "multi-prefix ";
                 }
 
-                await Irc.WriteLine("CAP REQ :" + requirements);
-                await Irc.WriteLine("CAP END");
+                Irc.WriteLine("CAP REQ :" + requirements);
+                Irc.WriteLine("CAP END");
             }
 
             return true;

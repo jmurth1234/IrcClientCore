@@ -113,8 +113,8 @@ namespace IrcClientCore
         {
             try
             {
-                await WriteLine(String.Format("NICK {0}", Server.Username));
-                await WriteLine(String.Format("USER {0} {1} * :{2}", Server.Username, "8", Server.Username));
+                WriteLine(String.Format("NICK {0}", Server.Username));
+                WriteLine(String.Format("USER {0} {1} * :{2}", Server.Username, "8", Server.Username));
             }
             catch (Exception e)
             {
@@ -320,21 +320,7 @@ namespace IrcClientCore
             this.AddMessage(channel, msg);
         }
 
-<<<<<<< HEAD
-        public void ClientMessage(string text)
-        {
-            Message msg = new Message();
-            msg.User = "";
-            msg.Type = MessageType.Info;
-            msg.Text = text;
-
-            this.AddMessage(currentChannel, msg);
-        }
-
         public abstract void WriteLine(string str);
-=======
-        public abstract Task WriteLine(string str);
->>>>>>> 82c7c8c850f21fb69a505110da8979baa4b2b29d
         
         public static string ReplaceFirst(string text, string search, string replace)
         {
