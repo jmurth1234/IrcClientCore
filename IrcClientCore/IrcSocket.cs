@@ -101,13 +101,8 @@ namespace IrcClientCore
 
         public override void WriteLine(string str)
         {
-<<<<<<< HEAD
-            clientStreamWriter.WriteLine(str);
-            clientStreamWriter.Flush();
-=======
-            await _clientStreamWriter.WriteLineAsync(str);
-            await _clientStreamWriter.FlushAsync();
->>>>>>> 82c7c8c850f21fb69a505110da8979baa4b2b29d
+            _clientStreamWriter.WriteLine(str);
+            _clientStreamWriter.Flush();
         }
     }
 }

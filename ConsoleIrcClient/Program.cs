@@ -10,13 +10,8 @@ namespace ConsoleIrcClient
 {
     public class Program
     {
-<<<<<<< HEAD
-        private ObservableCollection<Message> channelBuffers;
-        private Irc socket;
-=======
         private ObservableCollection<Message> _channelBuffers;
         private Irc _socket;
->>>>>>> 82c7c8c850f21fb69a505110da8979baa4b2b29d
 
         public static void Main(string[] args)
         {
@@ -40,14 +35,8 @@ namespace ConsoleIrcClient
             };
 
             ReadLine.PasswordMode = true;
-<<<<<<< HEAD
-            
-            if (server.hostname.Contains("znc")) server.password += server.username + ":";
-            server.password += ReadLine.Read("Password: ");
-=======
             if (server.Hostname.Contains("znc")) server.Password += server.Username + ":";
             server.Password += ReadLine.Read("Password: ");
->>>>>>> 82c7c8c850f21fb69a505110da8979baa4b2b29d
             ReadLine.PasswordMode = false;
 
             _socket = new IrcSocket(server);

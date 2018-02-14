@@ -25,20 +25,8 @@ namespace IrcClientCore
 
         private string _currentWhois = "";
 
-<<<<<<< HEAD
-        private bool autoReconnect = true;
-
-        public Dictionary<string, ObservableCollection<Message>> channelBuffers { get; set; }
-
-        private string currentWhois = "";
-        private string[] WhoisCmds = new string[] { "311", "319", "312", "330", "671", "317", "401" };
-
-        public string buffer;
-        public string currentChannel { get; set; }
-=======
         public string Buffer;
         public string CurrentChannel { get; set; }
->>>>>>> 82c7c8c850f21fb69a505110da8979baa4b2b29d
         public bool Transferred = false;
 
         internal bool IsReconnecting;
