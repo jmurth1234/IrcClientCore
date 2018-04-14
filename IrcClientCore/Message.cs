@@ -6,24 +6,32 @@ namespace IrcClientCore
     {
         public Message()
         {
-            DateTime date = DateTime.Now;
-            Timestamp = date.ToString("HH:mm");
+            Date = DateTime.Now;
+        }
+
+        public DateTime Date
+        {
+            get => _date;
+            set
+            {
+                _date = value;
+                _timestamp = value.ToString("HH:mm");
+            }
         }
 
         public string Timestamp {
             get
             {
-                if (_date == null)
+                if (_timestamp == null)
                 {
                     var date = DateTime.Now;
-                    _date = date.ToString("HH:mm");
+                    _timestamp = date.ToString("HH:mm");
                 }
-                return _date;
+                return _timestamp;
             }
-            set => _date = value;
         }
 
-        private string _date;
+        private string _timestamp;
 
         public string User {
             get
@@ -42,6 +50,7 @@ namespace IrcClientCore
         }
 
         private string _username;
+        private DateTime _date;
 
         public string Text { get; set; }
         public bool Mention { get; internal set; }

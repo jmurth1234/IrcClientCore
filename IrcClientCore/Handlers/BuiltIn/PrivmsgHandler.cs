@@ -30,7 +30,7 @@ namespace IrcClientCore.Handlers.BuiltIn
             if (parsedLine.ServerTime != null)
             {
                 var time = DateTime.Parse(parsedLine.ServerTime);
-                msg.Timestamp = time.ToString("HH:mm");
+                msg.Date = time;
             }
 
             if (content.Contains("ACTION"))
@@ -46,6 +46,11 @@ namespace IrcClientCore.Handlers.BuiltIn
             if ((parsedLine.TrailMessage.TrailingContent.Contains(Irc.Server.Username) || parsedLine.CommandMessage.Parameters[0] == Irc.Server.Username))
             {
                 msg.Mention = true;
+                Irc.AddMention(new IrcMention()
+                {
+                    Channel = destination,
+                    Message = msg
+                });
             }
 
             Irc.AddMessage(destination, msg);

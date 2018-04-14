@@ -37,6 +37,7 @@ namespace IrcClientCore
         public bool ReadOrWriteFailed { get; internal set; }
 
         public Action<Irc> HandleDisconnect { get; set; }
+        public ObservableCollection<IrcMention> Mentions { get; set; }
 
         public string Nickname {
             get => Server.Username;
@@ -58,7 +59,7 @@ namespace IrcClientCore
         {
             this.Server = server;
             ChannelList = new ChannelsGroup(new ObservableCollection<Channel>()) { Server = server.Name };
-
+            Mentions = new ObservableCollection<IrcMention>();
             this.CommandManager = new CommandManager(this);
             this.HandlerManager = new HandlerManager(this);
 
@@ -357,5 +358,9 @@ namespace IrcClientCore
             return  ChannelList[channel].Store.RawUsers;
         }
 
+        public void AddMention(IrcMention ircMention)
+        {
+            Mentions.Add(ircMention);
+        }
     }
 }
