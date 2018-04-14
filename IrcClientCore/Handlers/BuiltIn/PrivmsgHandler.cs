@@ -24,7 +24,7 @@ namespace IrcClientCore.Handlers.BuiltIn
             }
 
             Message msg = new Message();
-
+            msg.Channel = destination;
             msg.Type = MessageType.Normal;
             msg.User = parsedLine.PrefixMessage.Nickname;
             if (parsedLine.ServerTime != null)
@@ -46,11 +46,7 @@ namespace IrcClientCore.Handlers.BuiltIn
             if ((parsedLine.TrailMessage.TrailingContent.Contains(Irc.Server.Username) || parsedLine.CommandMessage.Parameters[0] == Irc.Server.Username))
             {
                 msg.Mention = true;
-                Irc.AddMention(new IrcMention()
-                {
-                    Channel = destination,
-                    Message = msg
-                });
+                Irc.AddMention(msg);
             }
 
             Irc.AddMessage(destination, msg);

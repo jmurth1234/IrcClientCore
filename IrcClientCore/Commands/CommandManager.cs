@@ -60,7 +60,7 @@ namespace IrcClientCore.Commands
 
             var completions = cmd.GetCompletions(arg);
 
-            return completions != null ? completions : new string[0];
+            return completions ?? new string[0];
         }
 
         internal BaseCommand GetCommand(string potentialCommand)

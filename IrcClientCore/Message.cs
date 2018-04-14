@@ -36,19 +36,17 @@ namespace IrcClientCore
         public string User {
             get
             {
-                if (Type == MessageType.Action || Type == MessageType.Info)
-                {
-                    return String.Format("* {0}", _username);
-                }
                 if (_username == "" )
                 {
                     return "*";
                 }
-                return String.Format("<{0}>", _username);
+                return _username;
             }
             set => _username = value;
         }
 
+        public string Channel { get; set; }
+        
         private string _username;
         private DateTime _date;
 
