@@ -114,8 +114,8 @@ namespace IrcClientCore
         {
             try
             {
-                await WriteLine(String.Format("NICK {0}", Server.Username));
-                await WriteLine(String.Format("USER {0} {1} * :{2}", Server.Username, "8", Server.Username));
+                WriteLine(String.Format("NICK {0}", Server.Username));
+                WriteLine(String.Format("USER {0} {1} * :{2}", Server.Username, "8", Server.Username));
             }
             catch (Exception e)
             {
@@ -154,7 +154,7 @@ namespace IrcClientCore
 
             if (receivedData.StartsWith("PING"))
             {
-                await WriteLine(receivedData.Replace("PING", "PONG"));
+                WriteLine(receivedData.Replace("PING", "PONG"));
                 return;
             }
 
@@ -321,7 +321,7 @@ namespace IrcClientCore
             this.AddMessage(channel, msg);
         }
 
-        public abstract Task WriteLine(string str);
+        public abstract void WriteLine(string str);
         
         public static string ReplaceFirst(string text, string search, string replace)
         {
