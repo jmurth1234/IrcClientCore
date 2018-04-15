@@ -50,23 +50,23 @@ namespace IrcClientCore.Commands
             _commandTable.Add(cmd, handler);
         }
 
-        public string[] GetCompletions(string command, string arg)
+        public string[] GetCompletions(string channel, string command, string arg)
         {
-            var cmd = GetCommand(command);
+            var cmd = GetCommand(channel, command);
             if (cmd == null)
             {
                 return new string[0];
             }
 
-            var completions = cmd.GetCompletions(arg);
+            var completions = cmd.GetCompletions(channel, arg);
 
             return completions ?? new string[0];
         }
 
-        internal BaseCommand GetCommand(string potentialCommand)
+        internal BaseCommand GetCommand(string channelName, string potentialCommand)
         {
             var cmd = CommandList.Where(command => command.StartsWith(potentialCommand)).ToList();
-            var channel = Server.ChannelList[Server.CurrentChannel];
+            var channel = Server.ChannelList[channelName];
             if (cmd.Count > 1)
             {
                 channel.ClientMessage("Multiple matches found: " + potentialCommand);
@@ -85,7 +85,7 @@ namespace IrcClientCore.Commands
             return null;
         }
 
-        public void HandleCommand(string text)
+        public void HandleCommand(string channel, string text)
         {
             string[] args = text.Split(' ');
             
@@ -93,12 +93,12 @@ namespace IrcClientCore.Commands
             {
                 if (args[0].StartsWith("//"))
                     args[0] = args[0].Replace("//", "/");
-                Server.SendMessage(String.Join(" ", args));
+                Server.SendMessage(channel, String.Join(" ", args));
             }
             else if (args[0].StartsWith("/"))
             {
-                var command = GetCommand(args[0]);
-                command.RunCommand(args);
+                var command = GetCommand(channel, args[0]);
+                command.RunCommand(channel, args);
             }
         }
 

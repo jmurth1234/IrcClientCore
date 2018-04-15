@@ -8,17 +8,17 @@ namespace IrcClientCore.Commands
     {
         public Irc Irc { get; internal set; }
 
-        public abstract void RunCommand(string[] args);
+        public abstract void RunCommand(string channel, string[] args);
 
-        public virtual string[] GetCompletions(string word)
+        public virtual string[] GetCompletions(string channel, string word)
         {
             return new string[0];
         }
 
-        protected void ClientMessage(string message)
+        protected void ClientMessage(string channel, string message)
         {
-            if (Irc.CurrentChannel == null) return;
-            Irc.ChannelList[Irc.CurrentChannel].ClientMessage(message);
+            if (channel == null) return;
+            Irc.ChannelList[channel].ClientMessage(message);
         }
     }
 }

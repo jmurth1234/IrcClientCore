@@ -4,7 +4,7 @@ namespace IrcClientCore.Commands
 {
     internal class QuitCommand : BaseCommand
     {
-        public override void RunCommand(string[] args)
+        public override void RunCommand(string channel, string[] args)
         {
             var message = String.Join(" ", args, 1, args.Length - 1);
 

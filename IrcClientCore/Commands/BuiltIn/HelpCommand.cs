@@ -6,10 +6,10 @@ namespace IrcClientCore.Commands
 {
     class HelpCommand : BaseCommand
     { 
-        public override void RunCommand(string[] args)
+        public override void RunCommand(string channel, string[] args)
         {
-            ClientMessage("The following commands are available: ");
-            ClientMessage(String.Join(", ", Irc.CommandManager.CommandList));
+            ClientMessage(channel, "The following commands are available: ");
+            ClientMessage(channel, String.Join(", ", Irc.CommandManager.CommandList));
         }
     }
 }

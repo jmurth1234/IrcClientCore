@@ -13,6 +13,8 @@ namespace ConsoleIrcClient
         private ObservableCollection<Message> _channelBuffers;
         private Irc _socket;
 
+        private string CurrentChannel;
+        
         public static void Main(string[] args)
         {
             new Program().Start();
@@ -57,7 +59,7 @@ namespace ConsoleIrcClient
 
                     if (array.Length > 1)
                     {
-                        var completions = handler.GetCompletions(array[0], array.Last());
+                        var completions = handler.GetCompletions(CurrentChannel, array[0], array.Last());
                         return completions.Length > 0 ? completions : GetUserCompletions(text);
                     }
 
@@ -65,7 +67,7 @@ namespace ConsoleIrcClient
                     return commands.Select(command => command.Replace("/", "")).ToArray();
                 }
 
-                if ((text.StartsWith("/") && index > 0 || !text.StartsWith("/")) && _socket.CurrentChannel != null)
+                if ((text.StartsWith("/") && index > 0 || !text.StartsWith("/")) && CurrentChannel != null)
                 {
                     return GetUserCompletions(text);
                 }
@@ -77,19 +79,19 @@ namespace ConsoleIrcClient
 
             while (!_socket.ReadOrWriteFailed)
             {
-                var prefix = _socket.CurrentChannel != null
-                    ? $"[{_socket.CurrentChannel} ({_socket.GetChannelUsers(_socket.CurrentChannel).Count})] "
+                var prefix = CurrentChannel != null
+                    ? $"[{CurrentChannel} ({_socket.GetChannelUsers(CurrentChannel).Count})] "
                     : "";
 
                 var line = ReadLine.Read($"{prefix}> "); // Get string from user
                 if (line == "") continue;
-                handler.HandleCommand(line);
+                handler.HandleCommand(CurrentChannel, line);
             }
         }
 
         private string[] GetUserCompletions(string text)
         {
-            var users = _socket.GetRawUsers(_socket.CurrentChannel);
+            var users = _socket.GetRawUsers(CurrentChannel);
             var current = text.Split(" ").Last();
             return users.Where(cmd => cmd.StartsWith(current)).ToArray();
         }
@@ -100,7 +102,7 @@ namespace ConsoleIrcClient
             {
                 _channelBuffers.CollectionChanged -= ChannelBuffersOnCollectionChanged;
             }
-            _socket.CurrentChannel = channel;
+            CurrentChannel = channel;
 
             if (channel == "")
             {
@@ -108,8 +110,8 @@ namespace ConsoleIrcClient
             }
             else
             {
-                _channelBuffers = _socket.ChannelList[_socket.CurrentChannel].Buffers;
-                _socket.ChannelList[_socket.CurrentChannel].Store.SortUsers();
+                _channelBuffers = _socket.ChannelList[CurrentChannel].Buffers;
+                _socket.ChannelList[CurrentChannel].Store.SortUsers();
 
             }
 
@@ -141,19 +143,19 @@ namespace ConsoleIrcClient
             this._program = program;
         }
 
-        public override void RunCommand(string[] args)
+        public override void RunCommand(string channel, string[] args)
         {
             if (args.Length != 2)
             {
                 _program.SwitchChannel("");
-                ClientMessage("List of channels: " + GetCompletions(""));
+                ClientMessage(channel, "List of channels: " + GetCompletions(channel, ""));
                 return;
             }
 
             _program.SwitchChannel(args[1]);
         }
 
-        public override string[] GetCompletions(string word)
+        public override string[] GetCompletions(string channelName, string word)
         {
             var channels = Irc.ChannelList.Select(channel => channel.Name);
             var completions = channels.Where(name => name.ToLower().Contains(word.ToLower()));

@@ -39,9 +39,10 @@ namespace IrcClientCore.Handlers.BuiltIn
                 Message msg = new Message();
                 msg.Text = _currentWhois;
                 msg.Type = MessageType.Info;
-                Irc.AddMessage(Irc.CurrentChannel, msg);
+                Irc.AddMessage(Irc.WhoisDestination, msg);
 
                 _currentWhois = "";
+                Irc.WhoisDestination = "";
             }
 
             return Task.FromResult(true);

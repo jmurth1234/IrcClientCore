@@ -4,25 +4,25 @@ namespace IrcClientCore.Commands
 {
     internal class OpCommand : BaseCommand
     {
-        public override void RunCommand(string[] args)
+        public override void RunCommand(string channel, string[] args)
         {
             if (args.Length != 2)
             {
-                ClientMessage("Wrong params: " + String.Join(" ", args));
+                ClientMessage(channel, "Wrong params: " + String.Join(" ", args));
                 return;
             }
 
             string[] modeArgs;
             if (args[0].ToLower().Contains("deop"))
             {
-                modeArgs = new string[] { "MODE", Irc.CurrentChannel, "-o", args[1] };
+                modeArgs = new string[] { "MODE", channel, "-o", args[1] };
             }
             else
             {
-                modeArgs = new string[] { "MODE", Irc.CurrentChannel, "+o", args[1] };
+                modeArgs = new string[] { "MODE", channel, "+o", args[1] };
             }
 
-            Irc.CommandManager.GetCommand("/mode").RunCommand(modeArgs);
+            Irc.CommandManager.GetCommand(channel, "/mode").RunCommand(channel, modeArgs);
         }
     }
 }

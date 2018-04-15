@@ -4,7 +4,7 @@ namespace IrcClientCore.Commands
 {
     internal class KickCommand : BaseCommand
     {
-        public override void RunCommand(string[] args)
+        public override void RunCommand(string channel, string[] args)
         {
             if (args.Length < 2)
             {
@@ -12,7 +12,7 @@ namespace IrcClientCore.Commands
             }
 
             var nick = args[1];
-            var kick = "KICK " + Irc.CurrentChannel + " " + nick;
+            var kick = "KICK " + channel + " " + nick;
 
             if (args.Length > 3)
             {

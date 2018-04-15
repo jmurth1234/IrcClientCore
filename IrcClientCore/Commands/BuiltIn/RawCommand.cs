@@ -4,7 +4,7 @@ namespace IrcClientCore.Commands
 {
     internal class RawCommand : BaseCommand
     {
-        public override void RunCommand(string[] args)
+        public override void RunCommand(string channel, string[] args)
         {
             if (args.Length == 1)
             {

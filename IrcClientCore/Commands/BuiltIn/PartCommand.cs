@@ -2,7 +2,7 @@
 {
     internal class PartCommand : BaseCommand
     {
-        public override void RunCommand(string[] args)
+        public override void RunCommand(string channel, string[] args)
         {
             if (args.Length > 2)
             {
@@ -14,7 +14,7 @@
             }
             else
             {
-                Irc.PartChannel(Irc.CurrentChannel);
+                Irc.PartChannel(channel);
             }
         }
     }

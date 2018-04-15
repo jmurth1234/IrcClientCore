@@ -2,11 +2,11 @@
 {
     internal class ModeCommand : BaseCommand
     {
-        public override void RunCommand(string[] args)
+        public override void RunCommand(string channel, string[] args)
         {
             if ((args.Length < 3) || (args.Length > 2 && !args[1].StartsWith("#")))
             {
-                ClientMessage("Command too short!");
+                ClientMessage(channel, "Command too short!");
                 return;
             }
 
@@ -23,7 +23,7 @@
             }
             else
             {
-                modeLine += Irc.CurrentChannel + " " + args[1];
+                modeLine += channel + " " + args[1];
 
                 if (args.Length == 3)
                 {

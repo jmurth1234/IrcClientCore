@@ -6,7 +6,7 @@ namespace IrcClientCore.Commands
 {
     class MeCommand : BaseCommand
     {
-        public override void RunCommand(string[] args)
+        public override void RunCommand(string channel, string[] args)
         {
             if (args.Length == 1)
             {
@@ -14,7 +14,7 @@ namespace IrcClientCore.Commands
             }
 
             var message = String.Join(" ", args, 1, args.Length - 1);
-            Irc.SendAction(message);
+            Irc.SendAction(channel, message);
         }
     }
 }

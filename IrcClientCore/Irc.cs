@@ -26,7 +26,6 @@ namespace IrcClientCore
         private string _currentWhois = "";
 
         public string Buffer;
-        public string CurrentChannel { get; set; }
         public bool Transferred = false;
 
         internal bool IsReconnecting;
@@ -54,6 +53,7 @@ namespace IrcClientCore
         }
 
         public bool Bouncer { get; internal set; }
+        internal string WhoisDestination { get; set; }
 
         protected Irc(IrcServer server)
         {
@@ -171,16 +171,16 @@ namespace IrcClientCore
         }
 
 
-        public void SendAction(string message)
+        public void SendAction(string channel, string message)
         {
             Message msg = new Message();
 
             msg.Text = message;
             msg.Type = MessageType.Action;
             msg.User = Server.Username;
-            AddMessage(CurrentChannel, msg);
+            AddMessage(channel, msg);
 
-            WriteLine(String.Format("PRIVMSG {0} :\u0001ACTION {1}\u0001", CurrentChannel, message));
+            WriteLine(String.Format("PRIVMSG {0} :\u0001ACTION {1}\u0001", channel, message));
         }
 
         public void SendMessage(string channel, string message)
@@ -216,20 +216,7 @@ namespace IrcClientCore
             RemoveChannel(channel);
         }
 
-        public void SendMessage(string message)
-        {
-            Message msg = new Message();
-
-            msg.Text = message;
-            msg.User = Server.Username;
-            msg.Type = MessageType.Normal;
-
-            AddMessage(CurrentChannel, msg);
-
-            WriteLine(String.Format("PRIVMSG {0} :{1}", CurrentChannel, message));
-        }
-
-        public async void AddError(String message)
+        public void AddError(String message)
         {
             Message msg = new Message();
 
@@ -290,27 +277,9 @@ namespace IrcClientCore
             if (ChannelList.Contains(channel))
             {
                 ChannelList.Remove(channel);
-
-                if (CurrentChannel == channel)
-                {
-                    CurrentChannel = "";
-                }
             }
         }
-
-        public void SwitchChannel(string channel)
-        {
-            if (channel == null)
-            {
-                return;
-            }
-
-            if (ChannelList.Contains(channel))
-            {
-                CurrentChannel = channel;
-            }
-        }
-
+        
         public void ClientMessage(string channel, string text)
         {
             Message msg = new Message();
