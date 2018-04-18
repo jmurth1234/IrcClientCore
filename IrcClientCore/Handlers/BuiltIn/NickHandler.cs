@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace IrcClientCore.Handlers.BuiltIn
 {
-    class DefaultHandler : BaseHandler
+    class NickHandler : BaseHandler
     {
         public override async Task<bool> HandleLine(IrcMessage parsedLine)
         {
@@ -15,6 +16,11 @@ namespace IrcClientCore.Handlers.BuiltIn
                 await Irc.AddChannel("Server");
             }
 
+            if (parsedLine.PrefixMessage.IsUser && parsedLine.PrefixMessage.Nickname == Irc.Nickname) 
+            {
+                Irc.Server.Username = parsedLine.TrailMessage.HasTrail ? parsedLine.TrailMessage.TrailingContent : Irc.Nickname;
+            }
+            
             Message msg = new Message
             {
                 Text = parsedLine.OriginalMessage,

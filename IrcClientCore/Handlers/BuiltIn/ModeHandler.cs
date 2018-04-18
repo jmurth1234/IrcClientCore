@@ -19,53 +19,56 @@ namespace IrcClientCore.Handlers.BuiltIn
                 if (parsedLine.CommandMessage.Parameters.Count == 3)
                 {
                     string currentPrefix = Irc.ChannelList[channel].Store.GetPrefix(parsedLine.CommandMessage.Parameters[2]);
-                    string prefix = "";
+                    var prefix = "";
                     string mode = parsedLine.CommandMessage.Parameters[1];
-                    if (mode == "+o")
+                    switch (mode)
                     {
-                        if (currentPrefix.Length > 0 && currentPrefix[0] == '+')
-                        {
-                            prefix = "@+";
-                        }
-                        else
-                        {
-                            prefix = "@";
-                        }
-                    }
-                    else if (mode == "-o")
-                    {
-                        if (currentPrefix.Length > 0 && currentPrefix[1] == '+')
-                        {
-                            prefix = "+";
-                        }
-                    }
-                    else if (mode == "+v")
-                    {
-                        if (currentPrefix.Length > 0 && currentPrefix[0] == '@')
-                        {
-                            prefix = "@+";
-                        }
-                        else
-                        {
-                            prefix = "+";
-                        }
-                    }
-                    else if (mode == "-v")
-                    {
-                        if (currentPrefix.Length > 0 && currentPrefix[0] == '@')
-                        {
-                            prefix = "@";
-                        }
-                        else
-                        {
-                            prefix = "";
-                        }
+                        case "+o":
+                            if (currentPrefix.Length > 0 && currentPrefix[0] == '+')
+                            {
+                                prefix = "@+";
+                            }
+                            else
+                            {
+                                prefix = "@";
+                            }
+
+                            break;
+                        case "-o":
+                            if (currentPrefix.Length > 0 && currentPrefix[1] == '+')
+                            {
+                                prefix = "+";
+                            }
+
+                            break;
+                        case "+v":
+                            if (currentPrefix.Length > 0 && currentPrefix[0] == '@')
+                            {
+                                prefix = "@+";
+                            }
+                            else
+                            {
+                                prefix = "+";
+                            }
+
+                            break;
+                        case "-v":
+                            if (currentPrefix.Length > 0 && currentPrefix[0] == '@')
+                            {
+                                prefix = "@";
+                            }
+                            else
+                            {
+                                prefix = "";
+                            }
+
+                            break;
                     }
 
                     Irc.ChannelList[channel].Store.ChangePrefix(parsedLine.CommandMessage.Parameters[2], prefix);
                 }
 
-                Irc.ClientMessage(channel, "Mode change: " + String.Join(" ", parsedLine.CommandMessage.Parameters));
+                Irc.ClientMessage(channel, "Mode change: " + string.Join(" ", parsedLine.CommandMessage.Parameters));
             }
 
             return Task.FromResult(true);

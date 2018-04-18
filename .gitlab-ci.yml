@@ -7,7 +7,6 @@ build:
  stage: build
  script:
   - 'dotnet build /property:Version=1.0.0-dev-$CI_BUILD_ID'
-  - 'dotnet pack --include-symbols /property:Version=1.0.0-dev-$CI_BUILD_ID'
   - 'dotnet nuget push /builds/nuxt-irc/dotnet-irc-testing/IrcClientCore/bin/Debug/*.nupkg -k $NUGET_KEY --source https://api.nuget.org/v3/index.json'
  tags:
   - docker

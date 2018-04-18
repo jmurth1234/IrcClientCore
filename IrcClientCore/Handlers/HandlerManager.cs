@@ -26,6 +26,7 @@ namespace IrcClientCore.Handlers
 
             // register the default handlers
             RegisterHandler("CAP", new CapHandler());
+            RegisterHandler("NICK", new NickHandler());
             RegisterHandler("PRIVMSG", new PrivmsgHandler());
             RegisterHandler("JOIN", new JoinHandler());
             RegisterHandler("PART", new PartHandler());
@@ -39,17 +40,7 @@ namespace IrcClientCore.Handlers
             MultiRegisterHandler(_topicCmds, new TopicHandler());
         }
 
-        private void RegisterHandler(string command, BaseHandler handler)
-        {
-            RegisterHandler(command, handler, HandlerPriority.MEDIUM);
-        }
-
-        private void MultiRegisterHandler(string[] commands, BaseHandler handler)
-        {
-            MultiRegisterHandler(commands, handler, HandlerPriority.MEDIUM);
-        }
-
-        private void MultiRegisterHandler(string[] commands, BaseHandler handler, HandlerPriority priority)
+        private void MultiRegisterHandler(string[] commands, BaseHandler handler, HandlerPriority priority = HandlerPriority.MEDIUM)
         {
             handler.Irc = Server;
             handler.Priority = priority;
@@ -60,7 +51,7 @@ namespace IrcClientCore.Handlers
             Handlers.Add(handler);
         }
 
-        private void RegisterHandler(string command, BaseHandler handler, HandlerPriority priority)
+        private void RegisterHandler(string command, BaseHandler handler, HandlerPriority priority = HandlerPriority.MEDIUM)
         {
             handler.Irc = Server;
             handler.Priority = priority;
