@@ -45,7 +45,7 @@ namespace IrcClientCore
                 Server.Username = value;
                 WriteLine("NICK " + value);
 
-                foreach (Channel channel in ChannelList)
+                foreach (var channel in ChannelList)
                 {
                     channel.ClientMessage("Changed username to " + value);
                 }
@@ -70,9 +70,9 @@ namespace IrcClientCore
 
         private void ConnectionChanged(bool connected)
         {
-            if (connected && Config.GetBoolean(Config.AutoReconnect))
+            if (connected && Server.ShouldReconnect)
             {
-                foreach (Channel channel in ChannelList)
+                foreach (var channel in ChannelList)
                 {
                     channel.ClientMessage("Reconnecting...");
                 }
@@ -80,7 +80,7 @@ namespace IrcClientCore
             }
             else
             {
-                foreach (Channel channel in ChannelList)
+                foreach (var channel in ChannelList)
                 {
                     channel.ClientMessage("Disconnected from IRC");
                 }
@@ -114,8 +114,8 @@ namespace IrcClientCore
         {
             try
             {
-                WriteLine(String.Format("NICK {0}", Server.Username));
-                WriteLine(String.Format("USER {0} {1} * :{2}", Server.Username, "8", Server.Username));
+                WriteLine(string.Format("NICK {0}", Server.Username));
+                WriteLine(string.Format("USER {0} {1} * :{2}", Server.Username, "8", Server.Username));
             }
             catch (Exception e)
             {
@@ -139,15 +139,13 @@ namespace IrcClientCore
                 {
                     ReadOrWriteFailed = true;
 
-                    var autoReconnect = Config.GetBoolean(Config.AutoReconnect);
-
-                    var msg = autoReconnect
+                    var msg = Server.ShouldReconnect
                         ? "Attempting to reconnect..."
                         : "Please try again later.";
 
                     AddError("Error with connection: \n" + msg);
 
-                    DisconnectAsync(attemptReconnect: autoReconnect);
+                    DisconnectAsync(attemptReconnect: Server.ShouldReconnect);
                 }
                 return;
             }
@@ -173,19 +171,19 @@ namespace IrcClientCore
 
         public void SendAction(string channel, string message)
         {
-            Message msg = new Message();
+            var msg = new Message();
 
             msg.Text = message;
             msg.Type = MessageType.Action;
             msg.User = Server.Username;
             AddMessage(channel, msg);
 
-            WriteLine(String.Format("PRIVMSG {0} :\u0001ACTION {1}\u0001", channel, message));
+            WriteLine(string.Format("PRIVMSG {0} :\u0001ACTION {1}\u0001", channel, message));
         }
 
         public void SendMessage(string channel, string message)
         {
-            Message msg = new Message();
+            var msg = new Message();
 
             msg.Text = message;
             msg.User = Server.Username;
@@ -194,7 +192,7 @@ namespace IrcClientCore
             if (ChannelList.Contains(channel))
                 ChannelList[channel].Buffers.Add(msg);
 
-            WriteLine(String.Format("PRIVMSG {0} :{1}", channel, message));
+            WriteLine(string.Format("PRIVMSG {0} :{1}", channel, message));
         }
 
         public string GetChannelTopic(string channel)
@@ -207,18 +205,18 @@ namespace IrcClientCore
 
         public void JoinChannel(string channel)
         {
-            WriteLine(String.Format("JOIN {0}", channel));
+            WriteLine(string.Format("JOIN {0}", channel));
         }
 
         public void PartChannel(string channel)
         {
-            WriteLine(String.Format("PART {0}", channel));
+            WriteLine(string.Format("PART {0}", channel));
             RemoveChannel(channel);
         }
 
-        public void AddError(String message)
+        public void AddError(string message)
         {
-            Message msg = new Message();
+            var msg = new Message();
 
             msg.Text = message;
             msg.User = "Error";
@@ -252,9 +250,9 @@ namespace IrcClientCore
 
             if (!ChannelList.Contains(channel))
             {
-                var comparer = Comparer<String>.Default;
+                var comparer = Comparer<string>.Default;
 
-                int i = 0;
+                var i = 0;
 
                 while (i < ChannelList.Count && comparer.Compare(ChannelList[i].Name.ToLower(), channel.ToLower()) < 0)
                     i++;
@@ -263,11 +261,6 @@ namespace IrcClientCore
             }
 
             await Task.Delay(1);
-
-            if (!Config.Contains(Config.SwitchOnJoin))
-            {
-                Config.SetBoolean(Config.SwitchOnJoin, true);
-            }
 
             return ChannelList.Contains(channel);
         }
@@ -282,7 +275,7 @@ namespace IrcClientCore
         
         public void ClientMessage(string channel, string text)
         {
-            Message msg = new Message();
+            var msg = new Message();
             msg.User = "";
             msg.Type = MessageType.Info;
             msg.Text = text;
@@ -294,7 +287,7 @@ namespace IrcClientCore
         
         public static string ReplaceFirst(string text, string search, string replace)
         {
-            int pos = text.IndexOf(search);
+            var pos = text.IndexOf(search);
             if (pos < 0)
             {
                 return text;

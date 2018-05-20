@@ -18,7 +18,7 @@ namespace IrcClientCore.Handlers.BuiltIn
                 await Irc.AddChannel(destination);
             }
 
-            Message msg = new Message();
+            var msg = new Message();
 
             msg.Type = MessageType.Info;
 
@@ -30,7 +30,7 @@ namespace IrcClientCore.Handlers.BuiltIn
             else
             {
                 msg.User = parsedLine.PrefixMessage.Nickname;
-                msg.Text = String.Format("kicked {0} from the channel: {1}", reciever, content);
+                msg.Text = string.Format("kicked {0} from the channel: {1}", reciever, content);
             }
 
             Irc.AddMessage(destination, msg);

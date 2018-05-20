@@ -17,7 +17,7 @@ namespace IrcClientCore.Handlers.BuiltIn
             if (Irc.Server.Channels != null && Irc.Server.Channels != "")
             {
                 var channelsList = Irc.Server.Channels.Split(',');
-                foreach (string channel in channelsList)
+                foreach (var channel in channelsList)
                 {
                     Irc.JoinChannel(channel);
                 }

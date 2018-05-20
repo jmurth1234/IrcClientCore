@@ -25,7 +25,7 @@ namespace IrcClientCore
 
         public void ClientMessage(string text)
         {
-            Message msg = new Message();
+            var msg = new Message();
             msg.User = "";
             msg.Type = MessageType.Info;
             msg.Text = text;

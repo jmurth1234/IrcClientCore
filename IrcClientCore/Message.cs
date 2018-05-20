@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace IrcClientCore
 {
@@ -53,10 +54,12 @@ namespace IrcClientCore
         public string Text { get; set; }
         public bool Mention { get; internal set; }
         public MessageType Type { get; set; }
+
+        public int MessageHash => GetHashCode();
     }
 
     public enum MessageType
     {
-        Normal, Action, Info
+        Normal, Action, Info, JoinPart
     }
 }

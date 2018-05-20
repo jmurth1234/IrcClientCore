@@ -19,11 +19,11 @@ namespace IrcClientCore.Handlers.BuiltIn
                 await Irc.AddChannel(channel);
             }
 
-            Message msg = new Message();
+            var msg = new Message();
             msg.Type = MessageType.Info;
 
             msg.User = "";
-            msg.Text = String.Format("Topic for channel {0}: {1}", channel, topic);
+            msg.Text = string.Format("Topic for channel {0}: {1}", channel, topic);
             Irc.AddMessage(channel, msg);
             Irc.ChannelList[channel].Store.SetTopic(topic);
             return true;

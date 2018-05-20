@@ -6,7 +6,7 @@ namespace IrcClientCore
         {
             get
             {
-                string prefix = "";
+                var prefix = "";
 
                 if (FullUsername.Length > 2)
                 {

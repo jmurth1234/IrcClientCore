@@ -144,7 +144,7 @@ namespace IrcClientCore
 
             if (!HasUser(username))
             {
-                User user = new User
+                var user = new User
                 {
                     FullUsername = username,
                 };
@@ -157,7 +157,7 @@ namespace IrcClientCore
             }
         }
 
-        public Boolean HasUser(string nick)
+        public bool HasUser(string nick)
         {
             nick = nick.Replace("~","").Replace("&","").Replace("@", "").Replace("%","").Replace("+", "");
             if (nick == "") return false;

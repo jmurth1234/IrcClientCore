@@ -26,7 +26,7 @@ namespace IrcClientCore.Handlers.BuiltIn
             }
             else
             {
-                for (int i = 2; i < parsedLine.CommandMessage.Parameters.Count; i++)
+                for (var i = 2; i < parsedLine.CommandMessage.Parameters.Count; i++)
                 {
                     whoisLine += parsedLine.CommandMessage.Command + " " + parsedLine.CommandMessage.Parameters[i] + " ";
                 }
@@ -36,7 +36,7 @@ namespace IrcClientCore.Handlers.BuiltIn
 
             if (cmd == "318")
             {
-                Message msg = new Message();
+                var msg = new Message();
                 msg.Text = _currentWhois;
                 msg.Type = MessageType.Info;
                 Irc.AddMessage(Irc.WhoisDestination, msg);

@@ -14,7 +14,7 @@ namespace IrcClientCore.Commands
             var nick = args[1];
             var msg = "PRIVMSG " + nick;
 
-            msg += " :" + String.Join(" ", args, 2, args.Length - 2);
+            msg += " :" + string.Join(" ", args, 2, args.Length - 2);
 
             Irc.WriteLine(msg);
         }

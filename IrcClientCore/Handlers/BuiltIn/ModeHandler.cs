@@ -18,9 +18,9 @@ namespace IrcClientCore.Handlers.BuiltIn
 
                 if (parsedLine.CommandMessage.Parameters.Count == 3)
                 {
-                    string currentPrefix = Irc.ChannelList[channel].Store.GetPrefix(parsedLine.CommandMessage.Parameters[2]);
+                    var currentPrefix = Irc.ChannelList[channel].Store.GetPrefix(parsedLine.CommandMessage.Parameters[2]);
                     var prefix = "";
-                    string mode = parsedLine.CommandMessage.Parameters[1];
+                    var mode = parsedLine.CommandMessage.Parameters[1];
                     switch (mode)
                     {
                         case "+o":

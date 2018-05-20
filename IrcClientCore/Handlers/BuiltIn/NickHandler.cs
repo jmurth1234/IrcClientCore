@@ -21,7 +21,7 @@ namespace IrcClientCore.Handlers.BuiltIn
                 Irc.Server.Username = parsedLine.TrailMessage.HasTrail ? parsedLine.TrailMessage.TrailingContent : Irc.Nickname;
             }
             
-            Message msg = new Message
+            var msg = new Message
             {
                 Text = parsedLine.OriginalMessage,
                 Type = MessageType.Info,

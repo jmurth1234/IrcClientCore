@@ -8,7 +8,7 @@ namespace IrcClientCore.Commands
         {
             if (args.Length != 2)
             {
-                ClientMessage(channel, "Wrong params: " + String.Join(" ", args));
+                ClientMessage(channel, "Wrong params: " + string.Join(" ", args));
                 return;
             }
 

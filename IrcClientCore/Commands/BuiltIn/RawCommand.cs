@@ -10,7 +10,7 @@ namespace IrcClientCore.Commands
             {
                 return;
             }
-            var message = String.Join(" ", args, 1, args.Length - 1);
+            var message = string.Join(" ", args, 1, args.Length - 1);
             Irc.WriteLine(message);
         }
     }

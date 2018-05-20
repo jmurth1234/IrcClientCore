@@ -10,7 +10,7 @@ namespace IrcClientCore.Commands
 {
     public class CommandManager
     {
-        private Dictionary<String, BaseCommand> _commandTable = new Dictionary<String, BaseCommand>();
+        private Dictionary<string, BaseCommand> _commandTable = new Dictionary<string, BaseCommand>();
         public ICollection<string> CommandList => _commandTable.Keys;
 
         public Irc Server { get; private set; }
@@ -70,7 +70,7 @@ namespace IrcClientCore.Commands
             if (cmd.Count > 1)
             {
                 channel.ClientMessage("Multiple matches found: " + potentialCommand);
-                channel.ClientMessage(String.Join(", ", cmd));
+                channel.ClientMessage(string.Join(", ", cmd));
                 channel.ClientMessage("Type /help for a list of commands.");
             }
             else if (cmd.Count == 1)
@@ -87,13 +87,13 @@ namespace IrcClientCore.Commands
 
         public void HandleCommand(string channel, string text)
         {
-            string[] args = text.Split(' ');
+            var args = text.Split(' ');
             
             if (args[0].StartsWith("//") || !args[0].StartsWith("/"))
             {
                 if (args[0].StartsWith("//"))
                     args[0] = args[0].Replace("//", "/");
-                Server.SendMessage(channel, String.Join(" ", args));
+                Server.SendMessage(channel, string.Join(" ", args));
             }
             else if (args[0].StartsWith("/"))
             {

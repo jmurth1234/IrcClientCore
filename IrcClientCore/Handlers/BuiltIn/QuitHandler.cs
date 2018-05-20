@@ -15,14 +15,14 @@ namespace IrcClientCore.Handlers.BuiltIn
                 var users = channel.Store;
                 if (users.HasUser(username))
                 {
-                    if ((!Config.Contains(Config.IgnoreJoinLeave)) || (!Config.GetBoolean(Config.IgnoreJoinLeave)))
+                    var msg = new Message
                     {
-                        Message msg = new Message();
-                        msg.Type = MessageType.Info;
-                        msg.User = parsedLine.PrefixMessage.Nickname;
-                        msg.Text = String.Format("({0}) {1}: {2}", parsedLine.PrefixMessage.Prefix, "quit the server", parsedLine.TrailMessage.TrailingContent);
-                        Irc.AddMessage(channel.Name, msg);
-                    }
+                        Type = MessageType.JoinPart,
+                        User = parsedLine.PrefixMessage.Nickname,
+                        Text = string.Format("({0}) {1}: {2}", parsedLine.PrefixMessage.Prefix, "quit the server",
+                            parsedLine.TrailMessage.TrailingContent)
+                    };
+                    Irc.AddMessage(channel.Name, msg);
 
                     users.RemoveUser(username);
                 }

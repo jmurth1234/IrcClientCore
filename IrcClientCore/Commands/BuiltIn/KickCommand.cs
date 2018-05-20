@@ -16,7 +16,7 @@ namespace IrcClientCore.Commands
 
             if (args.Length > 3)
             {
-                kick += " :" + String.Join(" ", args, 2, args.Length - 2);
+                kick += " :" + string.Join(" ", args, 2, args.Length - 2);
             }
 
             Irc.WriteLine(kick);

@@ -15,12 +15,12 @@ namespace IrcClientCore
 
         public Channel ServerLog { get; private set; }
 
-        public bool Contains(String s)
+        public bool Contains(string s)
         {
             return this.Any(chan => chan.Name.ToLower() == s.ToLower() );
         }
 
-        public void Insert(int i, String s)
+        public void Insert(int i, string s)
         {
             if (s == "Server" && !_serverAdded)
             {
@@ -41,7 +41,7 @@ namespace IrcClientCore
             });
         }
 
-        public void Remove(String s)
+        public void Remove(string s)
         {
             this.Remove(Get(s));
         }

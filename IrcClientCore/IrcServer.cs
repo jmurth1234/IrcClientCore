@@ -29,7 +29,7 @@ namespace IrcClientCore
         // channels are a string seperated by commas
         public string Channels { get; set; } = "";
 
-        public override String ToString()
+        public override string ToString()
         {
             return Name;
         }

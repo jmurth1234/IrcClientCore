@@ -15,7 +15,7 @@ namespace IrcClientCore.Handlers.BuiltIn
                 await Irc.AddChannel("Server");
             }
 
-            Message msg = new Message
+            var msg = new Message
             {
                 Text = parsedLine.OriginalMessage,
                 Type = MessageType.Info,

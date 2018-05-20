@@ -23,7 +23,7 @@ namespace IrcClientCore.Handlers.BuiltIn
                 await Irc.AddChannel(destination);
             }
 
-            Message msg = new Message();
+            var msg = new Message();
             msg.Channel = destination;
             msg.Type = MessageType.Normal;
             msg.User = parsedLine.PrefixMessage.Nickname;

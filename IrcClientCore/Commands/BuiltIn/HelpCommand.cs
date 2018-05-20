@@ -9,7 +9,7 @@ namespace IrcClientCore.Commands
         public override void RunCommand(string channel, string[] args)
         {
             ClientMessage(channel, "The following commands are available: ");
-            ClientMessage(channel, String.Join(", ", Irc.CommandManager.CommandList));
+            ClientMessage(channel, string.Join(", ", Irc.CommandManager.CommandList));
         }
     }
 }

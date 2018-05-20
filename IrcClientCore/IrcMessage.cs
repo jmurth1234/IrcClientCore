@@ -38,7 +38,7 @@ namespace IrcClientCore
                 lineSplit.RemoveAt(0);
             }
 
-            message = String.Join(" ", lineSplit);
+            message = string.Join(" ", lineSplit);
 
             this.OriginalMessage = message;
             this.PrefixMessage = new MessagePrefix(message);
@@ -156,7 +156,7 @@ namespace IrcClientCore
             // That is our Command and it's associated arguments.
             // Formatted as
             // :<Prefix> <Command> <space separated args> :<Trail>
-            string[] commandAndParameters = message
+            var commandAndParameters = message
                 .Substring(prefix.EndIndex + 1, trail.TrailStart - prefix.EndIndex - 1)
                 .Split(' ');
 
@@ -192,7 +192,7 @@ namespace IrcClientCore
         /// <param name="message">The message.</param>
         public MessageTrail(string message)
         {
-            string r = "[\x00-\x08\x0B\x0C\x0E-\x1F]";
+            var r = "[\x00-\x08\x0B\x0C\x0E-\x1F]";
             message = Regex.Replace(message, r, "", RegexOptions.Compiled);
 
             // Find the index of the closing colon used to mark the end of the 

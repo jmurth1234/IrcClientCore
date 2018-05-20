@@ -18,15 +18,14 @@ namespace IrcClientCore.Handlers.BuiltIn
                 channel = parsedLine.CommandMessage.Parameters[0];
             }
 
-            if ((!Config.Contains(Config.IgnoreJoinLeave)) || (!Config.GetBoolean(Config.IgnoreJoinLeave)))
+            var msg = new Message
             {
-                Message msg = new Message();
-                msg.Type = MessageType.Info;
-                msg.User = parsedLine.PrefixMessage.Nickname;
+                Type = MessageType.JoinPart,
+                User = parsedLine.PrefixMessage.Nickname,
+                Text = string.Format("({0}) {1}", parsedLine.PrefixMessage.Prefix, "joined the channel")
+            };
 
-                msg.Text = String.Format("({0}) {1}", parsedLine.PrefixMessage.Prefix, "joined the channel");
-                Irc.AddMessage(channel, msg);
-            }
+            Irc.AddMessage(channel, msg);
 
             Irc.ChannelList[channel].Store.AddUser(parsedLine.PrefixMessage.Nickname, true);
             return true;

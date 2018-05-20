@@ -19,16 +19,14 @@ namespace IrcClientCore.Handlers.BuiltIn
                     channel = parsedLine.CommandMessage.Parameters[0];
                 }
 
-                if ((!Config.Contains(Config.IgnoreJoinLeave)) || (!Config.GetBoolean(Config.IgnoreJoinLeave)))
+                var msg = new Message
                 {
+                    Type = MessageType.JoinPart,
+                    User = parsedLine.PrefixMessage.Nickname,
+                    Text = string.Format("({0}) {1}", parsedLine.PrefixMessage.Prefix, "left the channel")
+                };
 
-                    Message msg = new Message();
-                    msg.Type = MessageType.Info;
-                    msg.User = parsedLine.PrefixMessage.Nickname;
-
-                    msg.Text = String.Format("({0}) {1}", parsedLine.PrefixMessage.Prefix, "left the channel");
-                    Irc.AddMessage(channel, msg);
-                }
+                Irc.AddMessage(channel, msg);
 
                 Irc.ChannelList[channel].Store.RemoveUser(parsedLine.PrefixMessage.Nickname);
             }
