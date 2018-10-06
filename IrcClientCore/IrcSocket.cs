@@ -70,7 +70,7 @@ namespace IrcClientCore
                 return true;
             }
 
-            return sslPolicyErrors != SslPolicyErrors.None;
+            return sslPolicyErrors == SslPolicyErrors.None;
         }
 
         public override void DisconnectAsync(string msg = "Powered by WinIRC", bool attemptReconnect = false)
