@@ -20,16 +20,27 @@ namespace IrcClientCore.Handlers.BuiltIn
             {
                 Irc.Server.Username = parsedLine.TrailMessage.HasTrail ? parsedLine.TrailMessage.TrailingContent : Irc.Nickname;
             }
-            
-            var msg = new Message
+            else if (parsedLine.PrefixMessage.IsUser && parsedLine.TrailMessage.HasTrail)
             {
-                Text = parsedLine.OriginalMessage,
-                Type = MessageType.Info,
-                User = ""
-            };
+                var username = parsedLine.PrefixMessage.Nickname;
+                foreach (var channel in Irc.ChannelList)
+                {
+                    var users = channel.Store;
+                    if (users.HasUser(username))
+                    {
+                        var msg = new Message
+                        {
+                            Type = MessageType.JoinPart,
+                            User = parsedLine.PrefixMessage.Nickname,
+                            Text = string.Format("({0}) {1} {2}", parsedLine.PrefixMessage.Prefix, "changed nick to", parsedLine.TrailMessage.TrailingContent)
+                        };
+                        Irc.AddMessage(channel.Name, msg);
 
-            Debug.WriteLine(parsedLine.OriginalMessage);
-            Irc.ChannelList.ServerLog?.Buffers.Add(msg);
+                        users.RemoveUser(username);
+                        users.AddUser(parsedLine.TrailMessage.TrailingContent, true);
+                    }
+                }
+            }
             return true;
         }
     }
