@@ -37,7 +37,6 @@ namespace ConsoleIrcClient
             };
 
             ReadLine.PasswordMode = true;
-            if (server.Hostname.Contains("znc")) server.Password += server.Username + ":";
             server.Password += ReadLine.Read("Password: ");
             ReadLine.PasswordMode = false;
 
