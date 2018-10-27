@@ -19,7 +19,7 @@ namespace IrcClientCore
         [StringLength(100, MinimumLength = 3)]
         public string Name { get; set; } = "";
 
-        [Url]
+        [Hostname]
         public string Hostname { get; set; } = "";
 
         [Range(1, 65535)]
@@ -41,5 +41,19 @@ namespace IrcClientCore
         {
             return Name;
         }
+    }
+
+    public class HostnameAttribute : ValidationAttribute  
+    {  
+        public HostnameAttribute() : base("{0} is not a valid hostname.") { }
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)  
+        {
+            var error = this.FormatErrorMessage(validationContext.DisplayName);
+            if (value == null) return new ValidationResult(error);  
+            var textValue = value.ToString();  
+            return Uri.CheckHostName(textValue) != UriHostNameType.Unknown
+                ? new ValidationResult(error)   
+                : ValidationResult.Success;  
+        }  
     }
 }
