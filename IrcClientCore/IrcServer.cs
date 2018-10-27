@@ -51,7 +51,7 @@ namespace IrcClientCore
             var error = this.FormatErrorMessage(validationContext.DisplayName);
             if (value == null) return new ValidationResult(error);  
             var textValue = value.ToString();
-            if (value == "") return new ValidationResult(error);  
+            if (textValue == "") return new ValidationResult(error);  
             return Uri.CheckHostName(textValue) != UriHostNameType.Unknown
                 ? new ValidationResult(error)   
                 : ValidationResult.Success;  
