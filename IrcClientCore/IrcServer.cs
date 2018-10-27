@@ -52,7 +52,7 @@ namespace IrcClientCore
             if (value == null) return new ValidationResult(error);  
             var textValue = value.ToString();
             if (textValue == "") return new ValidationResult(error);  
-            return Uri.CheckHostName(textValue) != UriHostNameType.Unknown
+            return Uri.CheckHostName(textValue) == UriHostNameType.Unknown
                 ? new ValidationResult(error)   
                 : ValidationResult.Success;  
         }  
