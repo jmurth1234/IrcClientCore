@@ -203,12 +203,13 @@ namespace IrcClientCore
             return "";
         }
 
-        public void JoinChannel(string channel)
+        public async void JoinChannel(string channel)
         {
+            AddChannel(channel);
             WriteLine(string.Format("JOIN {0}", channel));
         }
 
-        public void PartChannel(string channel)
+        public async void PartChannel(string channel)
         {
             WriteLine(string.Format("PART {0}", channel));
             RemoveChannel(channel);
@@ -238,7 +239,20 @@ namespace IrcClientCore
                 await AddChannel(channel);
             }
 
-            ChannelList[channel].Buffers.Add(msg);
+            var chan = ChannelList[channel];
+
+            if (!chan.CurrentlyViewing)
+            {
+                chan.HasUnread = true;
+                chan.UnreadCount++;
+
+                if (msg.Mention)
+                {
+                  chan.HasMentions = true;
+                }
+            }
+
+            chan.Buffers.Add(msg);
         }
 
         public async Task<bool> AddChannel(string channel)
@@ -272,7 +286,7 @@ namespace IrcClientCore
                 ChannelList.Remove(channel);
             }
         }
-        
+
         public void ClientMessage(string channel, string text)
         {
             var msg = new Message();
@@ -284,7 +298,7 @@ namespace IrcClientCore
         }
 
         public abstract void WriteLine(string str);
-        
+
         public static string ReplaceFirst(string text, string search, string replace)
         {
             var pos = text.IndexOf(search);
@@ -317,10 +331,10 @@ namespace IrcClientCore
                 return new ObservableCollection<string>();
             }
 
-            return  ChannelList[channel].Store.RawUsers;
+            return ChannelList[channel].Store.RawUsers;
         }
 
-        public void AddMention(Message message)
+        public async void AddMention(Message message)
         {
             Mentions.Add(message);
         }

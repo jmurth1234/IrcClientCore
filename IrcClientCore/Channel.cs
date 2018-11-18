@@ -11,6 +11,31 @@ namespace IrcClientCore
         public string Server { get; set; }
         [DataMember]
         public string Name { get; set; }
+        [DataMember]
+        public bool HasUnread { get; set; }
+        [DataMember]
+        public bool HasMentions { get; set; }
+        [DataMember]
+        public int UnreadCount { get; set; }
+        [DataMember]
+        public bool CurrentlyViewing { 
+            get 
+            {
+                return _viewing;
+            }
+            set 
+            {
+                this._viewing = value;
+                if (value) 
+                {
+                    UnreadCount = 0;
+                    HasMentions = false;
+                    HasUnread = false;
+                }
+            }
+        }
+
+        private bool _viewing = false;
 
         public ChannelStore Store { get; private set; }
         public ObservableCollection<Message> Buffers { get; private set; }

@@ -122,7 +122,6 @@ namespace IrcClientCore
 
             Debug.WriteLine("Total time: " + (elapsedMsOrder + elapsedMs) + "ms");
             currentlySorting = false;
-
         }
 
         public void AddUsers(List<string> users)
@@ -166,7 +165,7 @@ namespace IrcClientCore
         }
 
         public void ChangeUser(string oldNick, string newNick) {
-            if (!HasUser(oldNick)) return; 
+            if (!HasUser(oldNick)) return;
 
             var user = Users.First(u => u.Nick == oldNick);
 
