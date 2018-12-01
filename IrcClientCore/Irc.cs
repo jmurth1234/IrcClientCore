@@ -126,6 +126,7 @@ namespace IrcClientCore
 
         internal async Task HandleLine(string receivedData)
         {
+            Debug.WriteLine(receivedData);
             if (receivedData.Contains("Nickname is already in use"))
             {
                 this.Server.Username += "_";
@@ -147,12 +148,6 @@ namespace IrcClientCore
 
                     DisconnectAsync(attemptReconnect: Server.ShouldReconnect);
                 }
-                return;
-            }
-
-            if (receivedData.StartsWith("PING"))
-            {
-                WriteLine(receivedData.Replace("PING", "PONG"));
                 return;
             }
 

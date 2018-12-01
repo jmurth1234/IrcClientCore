@@ -25,6 +25,7 @@ namespace IrcClientCore.Handlers
             this.DefaultHandler.Irc = irc;
 
             // register the default handlers
+            RegisterHandler("ING", new PingHandler());
             RegisterHandler("CAP", new CapHandler());
             RegisterHandler("NICK", new NickHandler());
             RegisterHandler("PRIVMSG", new PrivmsgHandler());

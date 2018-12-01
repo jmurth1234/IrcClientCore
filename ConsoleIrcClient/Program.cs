@@ -30,7 +30,7 @@ namespace ConsoleIrcClient
                 Name = "Test server",
                 Hostname = ReadLine.Read("Server Hostname: "),
                 Port = Convert.ToInt32(ReadLine.Read("Server Port: ", "6667")),
-                Ssl = Convert.ToBoolean(ReadLine.Read("Use SSL: ")),
+                Ssl = ReadLine.Read("Use SSL: ").StartsWith('y'),
                 IgnoreCertErrors = true,
                 Username = ReadLine.Read("Username: "),
                 Channels = "#rymate"
