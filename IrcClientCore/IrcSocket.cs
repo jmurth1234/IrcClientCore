@@ -101,8 +101,13 @@ namespace IrcClientCore
 
         public override void WriteLine(string str)
         {
-            _clientStreamWriter.WriteLine(str);
-            _clientStreamWriter.Flush();
+            try {
+                _clientStreamWriter.WriteLine(str);
+                _clientStreamWriter.Flush();
+            } catch (Exception e) {
+                Console.WriteLine("Failed to send: " + str);
+                Console.WriteLine(e);
+            }
         }
     }
 }
