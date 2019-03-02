@@ -35,8 +35,17 @@ namespace IrcClientCore
                 {
                     if (Server.Ssl)
                     {
-                        var sslStream = new SslStream(_conn.GetStream(), false, new RemoteCertificateValidationCallback(CheckCert));
-                        sslStream.AuthenticateAsClient(Server.Hostname);
+                        SslStream sslStream;
+                        if (Server.IgnoreCertErrors)
+                        {
+                            sslStream = new SslStream(_conn.GetStream(), true, new RemoteCertificateValidationCallback(CheckCert));
+                        }
+                        else
+                        {
+                            sslStream = new SslStream(_conn.GetStream());
+                        }
+
+                        await sslStream.AuthenticateAsClientAsync(Server.Hostname);
                         _stream = sslStream;
                     }
                     else
@@ -55,9 +64,9 @@ namespace IrcClientCore
                         await HandleLine(line);
                     }
                 }
-            } 
-            catch (Exception e) 
-            { 
+            }
+            catch (Exception e)
+            {
                 Console.WriteLine(e.Message);
                 Console.WriteLine(e.StackTrace);
             }
@@ -65,12 +74,7 @@ namespace IrcClientCore
 
         private bool CheckCert(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
-            if (Server.IgnoreCertErrors)
-            {
-                return true;
-            }
-
-            return sslPolicyErrors == SslPolicyErrors.None;
+            return true;
         }
 
         public override void DisconnectAsync(string msg = "Powered by WinIRC", bool attemptReconnect = false)
@@ -82,7 +86,8 @@ namespace IrcClientCore
                 IsReconnecting = true;
                 ReconnectionAttempts++;
 
-                Task.Run(async () => {
+                Task.Run(async () =>
+                {
                     if (ReconnectionAttempts < 3)
                         await Task.Delay(1000);
                     else
@@ -101,10 +106,13 @@ namespace IrcClientCore
 
         public override void WriteLine(string str)
         {
-            try {
+            try
+            {
                 _clientStreamWriter.WriteLine(str);
                 _clientStreamWriter.Flush();
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 Console.WriteLine("Failed to send: " + str);
                 Console.WriteLine(e);
             }
