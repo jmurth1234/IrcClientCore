@@ -6,7 +6,7 @@ using System.Text;
 
 namespace IrcClientCore.Handlers
 {
-    class HandlerManager
+    public class HandlerManager
     {
         private ICollection<BaseHandler> Handlers = new List<BaseHandler>();
 

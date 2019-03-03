@@ -17,17 +17,15 @@ namespace IrcClientCore
         public ChannelsGroup ChannelList { get; set; }
 
         public CommandManager CommandManager { get; private set; }
-        internal HandlerManager HandlerManager { get; }
-
-        private string _currentWhois = "";
+        protected HandlerManager HandlerManager { get; }
 
         public string Buffer;
         public bool Transferred = false;
 
-        internal bool IsReconnecting;
+        public bool IsReconnecting { get; set; }
 
         public bool IsConnected = false;
-        internal int ReconnectionAttempts;
+        protected int ReconnectionAttempts;
 
         public bool ReadOrWriteFailed { get; set; }
 
@@ -64,7 +62,7 @@ namespace IrcClientCore
             AddChannel("Server");
         }
 
-        private void ConnectionChanged(bool connected)
+        protected void ConnectionChanged(bool connected)
         {
             if (connected && Server.ShouldReconnect)
             {
@@ -89,7 +87,7 @@ namespace IrcClientCore
         public virtual async void SocketTransfer() { }
         public virtual async void SocketReturn() { }
 
-        internal void AttemptAuth()
+        protected void AttemptAuth()
         {
             // Auth to the server
             Console.WriteLine("Attempting to auth");
@@ -106,7 +104,7 @@ namespace IrcClientCore
             IsAuthed = true;
         }
 
-        private async void AttemptRegister()
+        protected async void AttemptRegister()
         {
             try
             {
@@ -120,7 +118,7 @@ namespace IrcClientCore
             }
         }
 
-        internal async Task HandleLine(string receivedData)
+        protected async Task HandleLine(string receivedData)
         {
             Debug.WriteLine(receivedData);
             if (receivedData.Contains("Nickname is already in use"))
