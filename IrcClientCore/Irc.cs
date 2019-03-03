@@ -4,10 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace IrcClientCore
@@ -33,7 +29,7 @@ namespace IrcClientCore
         public bool IsConnected = false;
         internal int ReconnectionAttempts;
 
-        public bool ReadOrWriteFailed { get; internal set; }
+        public bool ReadOrWriteFailed { get; set; }
 
         public Action<Irc> HandleDisconnect { get; set; }
         public ObservableCollection<Message> Mentions { get; set; }
