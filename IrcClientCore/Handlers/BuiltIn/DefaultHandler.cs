@@ -22,7 +22,7 @@ namespace IrcClientCore.Handlers.BuiltIn
                 User = ""
             };
 
-            Debug.WriteLine(parsedLine.OriginalMessage);
+            if (Irc.DebugMode) Debug.WriteLine(parsedLine.OriginalMessage);
             Irc.ChannelList.ServerLog?.Buffers.Add(msg);
             return true;
         }

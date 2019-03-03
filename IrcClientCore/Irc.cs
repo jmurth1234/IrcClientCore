@@ -48,6 +48,7 @@ namespace IrcClientCore
 
         public bool Bouncer { get; internal set; }
         internal string WhoisDestination { get; set; }
+        public bool DebugMode { get; private set; }
 
         protected Irc(IrcServer server)
         {
@@ -120,7 +121,7 @@ namespace IrcClientCore
 
         protected async Task HandleLine(string receivedData)
         {
-            Debug.WriteLine(receivedData);
+            if (DebugMode) Debug.WriteLine(receivedData);
             if (receivedData.Contains("Nickname is already in use"))
             {
                 this.Server.Username += "_";
