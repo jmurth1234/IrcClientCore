@@ -33,7 +33,7 @@ namespace ConsoleIrcClient
                 Ssl = ReadLine.Read("Use SSL: ").StartsWith('y'),
                 IgnoreCertErrors = true,
                 Username = ReadLine.Read("Username: "),
-                Channels = "#rymate"
+                Channels = ReadLine.Read("Channels to join (format #channel,#other...): ")
             };
 
             ReadLine.PasswordMode = true;
