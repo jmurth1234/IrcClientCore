@@ -42,10 +42,10 @@ namespace IrcClientCore
 
         public bool ServerLog => Name == "Server";
 
-        public Channel()
+        public Channel(Irc irc)
         {
             Store = new ChannelStore(this);
-            Buffers = new ObservableCollection<Message>();
+            Buffers = irc.CreateChannelBuffer();
         }
 
         public void ClientMessage(string text)

@@ -46,6 +46,11 @@ namespace IrcClientCore
             }
         }
 
+        public ObservableCollection<Message> CreateChannelBuffer()
+        {
+            return new ObservableCollection<Message>();
+        }
+
         public bool Bouncer { get; internal set; }
         internal string WhoisDestination { get; set; }
         public bool DebugMode { get; private set; }
@@ -53,7 +58,7 @@ namespace IrcClientCore
         protected Irc(IrcServer server)
         {
             this.Server = server;
-            ChannelList = new ChannelsGroup(new ObservableCollection<Channel>()) { Server = server.Name };
+            ChannelList = new ChannelsGroup(new ObservableCollection<Channel>(), this) { Server = server.Name };
             Mentions = new ObservableCollection<Message>();
             this.CommandManager = new CommandManager(this);
             this.HandlerManager = new HandlerManager(this);
@@ -324,7 +329,7 @@ namespace IrcClientCore
             return ChannelList[channel].Store.RawUsers;
         }
 
-        public async void AddMention(Message message)
+        public void AddMention(Message message)
         {
             Mentions.Add(message);
         }

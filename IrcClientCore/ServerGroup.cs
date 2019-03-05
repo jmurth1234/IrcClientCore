@@ -9,24 +9,28 @@ namespace IrcClientCore
 {
     public class ChannelsGroup : ObservableCollection<Channel>
     {
-        public ChannelsGroup(IEnumerable<Channel> items) : base(items) { }
-
-        private bool _serverAdded;
-
-        public Channel ServerLog { get; private set; }
-
-        public bool Contains(string s)
+        public ChannelsGroup(IEnumerable<Channel> items, Irc irc) : base(items)
         {
-            return this.Any(chan => chan.Name.ToLower() == s.ToLower() );
+            this.Irc = irc;
         }
 
-        public void Insert(int i, string s)
+        private bool _serverAdded;
+        public Channel ServerLog { get; private set; }
+        public string Server { get; set; }
+        public Irc Irc { get; }
+
+        public bool Contains(string channel)
         {
-            if (s == "Server" && !_serverAdded)
+            return this.Any(chan => chan.Name.ToLower() == channel.ToLower() );
+        }
+
+        public void Insert(int position, string channel)
+        {
+            if (channel == "Server" && !_serverAdded)
             {
-                ServerLog = new Channel
+                ServerLog = new Channel(Irc)
                 {
-                    Name = s,
+                    Name = channel,
                     Server = Server
                 };
 
@@ -34,28 +38,26 @@ namespace IrcClientCore
                 return;
             }
 
-            this.Insert(i, new Channel
+            this.Insert(position, new Channel(Irc)
             {
-                Name = s,
+                Name = channel,
                 Server = Server
             });
         }
 
-        public void Remove(string s)
+        public void Remove(string channel)
         {
-            this.Remove(Get(s));
+            this.Remove(Get(channel));
         }
 
-        public Channel this[string s]
+        public Channel this[string channel]
         {
-            get { return Get(s); }
+            get { return Get(channel); }
         }
 
-        public Channel Get(string s)
+        public Channel Get(string channel)
         {
-            return this.FirstOrDefault(chan => chan.Name.ToLower() == s.ToLower());
+            return this.FirstOrDefault(chan => chan.Name.ToLower() == channel.ToLower());
         }
-
-        public string Server { get; set; }
     }
 }
