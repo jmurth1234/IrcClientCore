@@ -122,7 +122,7 @@ namespace IrcClientCore
         protected async Task HandleLine(string receivedData)
         {
             if (DebugMode) Debug.WriteLine(receivedData);
-            if (receivedData.Contains("Nickname is already in use"))
+            if (receivedData.Contains("Nickname is already in use") && !Bouncer)
             {
                 this.Server.Username += "_";
                 AttemptAuth();
@@ -269,7 +269,7 @@ namespace IrcClientCore
             return ChannelList.Contains(channel);
         }
 
-        public ObservableCollection<Message> CreateChannelBuffer(string channel)
+        public virtual ObservableCollection<Message> CreateChannelBuffer(string channel)
         {
             return new ObservableCollection<Message>();
         }
