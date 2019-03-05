@@ -45,7 +45,7 @@ namespace IrcClientCore
         public Channel(Irc irc)
         {
             Store = new ChannelStore(this);
-            Buffers = irc.CreateChannelBuffer();
+            Buffers = irc.CreateChannelBuffer(Name);
         }
 
         public void ClientMessage(string text)

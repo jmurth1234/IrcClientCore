@@ -46,11 +46,6 @@ namespace IrcClientCore
             }
         }
 
-        public ObservableCollection<Message> CreateChannelBuffer()
-        {
-            return new ObservableCollection<Message>();
-        }
-
         public bool Bouncer { get; internal set; }
         internal string WhoisDestination { get; set; }
         public bool DebugMode { get; private set; }
@@ -272,6 +267,11 @@ namespace IrcClientCore
             await Task.Delay(1);
 
             return ChannelList.Contains(channel);
+        }
+
+        public ObservableCollection<Message> CreateChannelBuffer(string channel)
+        {
+            return new ObservableCollection<Message>();
         }
 
         public void RemoveChannel(string channel)
