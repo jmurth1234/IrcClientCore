@@ -42,8 +42,9 @@ namespace IrcClientCore
 
         public bool ServerLog => Name == "Server";
 
-        public Channel(Irc irc)
+        public Channel(Irc irc, string channel)
         {
+            Name = channel;
             Store = new ChannelStore(this);
             Buffers = irc.CreateChannelBuffer(Name);
         }

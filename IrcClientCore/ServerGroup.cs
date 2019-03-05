@@ -28,9 +28,8 @@ namespace IrcClientCore
         {
             if (channel == "Server" && !_serverAdded)
             {
-                ServerLog = new Channel(Irc)
+                ServerLog = new Channel(Irc, channel)
                 {
-                    Name = channel,
                     Server = Server
                 };
 
@@ -38,9 +37,8 @@ namespace IrcClientCore
                 return;
             }
 
-            this.Insert(position, new Channel(Irc)
+            this.Insert(position, new Channel(Irc, channel)
             {
-                Name = channel,
                 Server = Server
             });
         }
