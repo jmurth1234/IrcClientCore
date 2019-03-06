@@ -16,6 +16,7 @@ namespace IrcClientCore.Handlers
 
         private readonly string[] _whoisCmds = new string[] { "311", "319", "318", "312", "330", "671", "317", "401" };
         private readonly string[] _topicCmds = new string[] { "TOPIC", "332" };
+        private readonly string[] _listCmds = new string[] { "321", "322", "323" };
 
 
         public HandlerManager(Irc irc)
@@ -39,6 +40,7 @@ namespace IrcClientCore.Handlers
             RegisterHandler("470", new ChannelForwardHandler());
             MultiRegisterHandler(_whoisCmds, new WhoisHandler());
             MultiRegisterHandler(_topicCmds, new TopicHandler());
+            MultiRegisterHandler(_listCmds, new ListHandler());
         }
 
         private void MultiRegisterHandler(string[] commands, BaseHandler handler, HandlerPriority priority = HandlerPriority.MEDIUM)

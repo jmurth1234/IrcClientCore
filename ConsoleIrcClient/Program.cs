@@ -1,9 +1,11 @@
 ﻿using IrcClientCore;
 using IrcClientCore.Commands;
+using IrcClientCore.Handlers.BuiltIn;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 
 namespace ConsoleIrcClient
@@ -76,6 +78,8 @@ namespace ConsoleIrcClient
 
             SwitchChannel("");
 
+            _socket.HandleDisplayChannelList = HandleChannelList;
+
             while (!_socket.ReadOrWriteFailed)
             {
                 var prefix = CurrentChannel != null
@@ -86,6 +90,11 @@ namespace ConsoleIrcClient
                 if (line == "") continue;
                 handler.HandleCommand(CurrentChannel, line);
             }
+        }
+
+        private void HandleChannelList(List<ChannelListItem> list)
+        {
+            if (Debugger.IsAttached) Debugger.Break();
         }
 
         private string[] GetUserCompletions(string text)

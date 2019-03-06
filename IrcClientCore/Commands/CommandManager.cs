@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IrcClientCore.Commands.BuiltIn;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,6 +29,7 @@ namespace IrcClientCore.Commands
             RegisterCommand("/nick", new NickCommand());
             RegisterCommand("/msg", new MsgCommand());
             RegisterCommand("/whois", new WhoisCommand());
+            RegisterCommand("/list", new ListCommand());
 
             RegisterCommand("/mode", new ModeCommand());
 

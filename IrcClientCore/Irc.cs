@@ -1,5 +1,6 @@
 using IrcClientCore.Commands;
 using IrcClientCore.Handlers;
+using IrcClientCore.Handlers.BuiltIn;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -31,6 +32,8 @@ namespace IrcClientCore
 
         public Action<Irc> HandleDisconnect { get; set; }
         public ObservableCollection<Message> Mentions { get; set; }
+
+        public Action<List<ChannelListItem>> HandleDisplayChannelList { get; set; }
 
         public string Nickname {
             get => Server.Username;
