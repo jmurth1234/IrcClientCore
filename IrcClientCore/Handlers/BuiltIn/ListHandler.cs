@@ -16,6 +16,10 @@ namespace IrcClientCore.Handlers.BuiltIn
                     _channels = new List<ChannelListItem>();
                     break;
                 case "322":
+                    if (_channels == null)
+                    {
+                        _channels = new List<ChannelListItem>();
+                    }
                     _channels.Add(new ChannelListItem
                     {
                         Channel = parsedLine.CommandMessage.Parameters[1],
@@ -25,6 +29,7 @@ namespace IrcClientCore.Handlers.BuiltIn
                     break;
                 case "323":
                     Irc.HandleDisplayChannelList?.Invoke(_channels);
+                    _channels = new List<ChannelListItem>();
                     break;
             }
 
