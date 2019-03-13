@@ -30,6 +30,7 @@ namespace IrcClientCore.Handlers
             RegisterHandler("CAP", new CapHandler());
             RegisterHandler("NICK", new NickHandler());
             RegisterHandler("PRIVMSG", new PrivmsgHandler());
+            RegisterHandler("NOTICE", new PrivmsgHandler() { Type = MessageType.Notice });
             RegisterHandler("JOIN", new JoinHandler());
             RegisterHandler("PART", new PartHandler());
             RegisterHandler("KICK", new KickHandler());

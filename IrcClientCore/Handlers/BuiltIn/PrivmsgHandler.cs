@@ -7,6 +7,8 @@ namespace IrcClientCore.Handlers.BuiltIn
 {
     class PrivmsgHandler : BaseHandler
     {
+        public MessageType Type = MessageType.Normal;
+
         public override async Task<bool> HandleLine(IrcMessage parsedLine)
         {
             // handle messages to this irc client
@@ -25,7 +27,7 @@ namespace IrcClientCore.Handlers.BuiltIn
 
             var msg = new Message();
             msg.Channel = destination;
-            msg.Type = MessageType.Normal;
+            msg.Type = Type;
             msg.User = parsedLine.PrefixMessage.Nickname;
             if (parsedLine.ServerTime != null)
             {
