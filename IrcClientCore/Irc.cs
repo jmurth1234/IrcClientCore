@@ -51,7 +51,7 @@ namespace IrcClientCore
 
         public bool Bouncer { get; internal set; }
         internal string WhoisDestination { get; set; }
-        public bool DebugMode { get; private set; }
+        public bool DebugMode { get; protected set; }
 
         protected Irc(IrcServer server)
         {
@@ -62,6 +62,7 @@ namespace IrcClientCore
             this.HandlerManager = new HandlerManager(this);
 
             IsAuthed = false;
+            DebugMode = false;
 
             AddChannel("Server");
         }

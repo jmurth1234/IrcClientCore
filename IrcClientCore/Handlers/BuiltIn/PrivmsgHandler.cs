@@ -51,7 +51,14 @@ namespace IrcClientCore.Handlers.BuiltIn
                 Irc.AddMention(msg);
             }
 
-            Irc.AddMessage(destination, msg);
+            if (destination == "*")
+            {
+                Irc.ChannelList.ServerLog?.Buffers.Add(msg);
+            }
+            else
+            {
+                Irc.AddMessage(destination, msg);
+            }
             return true;
         }
     }
