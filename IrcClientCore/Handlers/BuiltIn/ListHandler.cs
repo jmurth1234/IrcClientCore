@@ -20,11 +20,15 @@ namespace IrcClientCore.Handlers.BuiltIn
                     {
                         _channels = new List<ChannelListItem>();
                     }
+
+                    var count = 0;
+                    int.TryParse(parsedLine.CommandMessage.Parameters[2], out count);
+
                     _channels.Add(new ChannelListItem
                     {
                         Channel = parsedLine.CommandMessage.Parameters[1],
                         Topic = parsedLine.TrailMessage.TrailingContent,
-                        Users = int.Parse(parsedLine.CommandMessage.Parameters[2])
+                        Users = count
                     });
                     break;
                 case "323":
