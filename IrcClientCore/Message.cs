@@ -38,7 +38,7 @@ namespace IrcClientCore
         public string User {
             get
             {
-                if (_username == "" )
+                if (_username == "")
                 {
                     return "*";
                 }
@@ -49,7 +49,7 @@ namespace IrcClientCore
 
         public string Channel { get; set; }
         
-        private string _username;
+        private string _username = "";
         private DateTime _date;
 
         public string Text { get; set; }

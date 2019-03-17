@@ -29,6 +29,12 @@ namespace IrcClientCore.Handlers.BuiltIn
             msg.Channel = destination;
             msg.Type = Type;
             msg.User = parsedLine.PrefixMessage.Nickname;
+
+            if (msg.User == null)
+            {
+                msg.User = "";
+            }
+
             if (parsedLine.ServerTime != null)
             {
                 var time = DateTime.Parse(parsedLine.ServerTime);
