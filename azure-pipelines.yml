@@ -6,6 +6,9 @@
 trigger:
 - master
 
+variables:
+- group: secrets
+
 pool:
   vmImage: 'Ubuntu-16.04'
   
