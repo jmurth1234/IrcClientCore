@@ -8,6 +8,8 @@ trigger:
 
 variables:
 - group: secrets
+- name: 'buildConfiguration'
+  value: 'Debug'
 
 pool:
   vmImage: 'Ubuntu-16.04'
@@ -15,7 +17,6 @@ pool:
 name: $(BuildID)-$(Date:yyyyMMdd).$(Rev:r)-dev-$(SourceBranchName)
 
 variables:
-  buildConfiguration: 'Debug'
 
 steps:
 - script: dotnet build --configuration $(buildConfiguration) /property:Version=1.0.$(Build.BuildNumber)
