@@ -18,5 +18,5 @@ steps:
 - script: dotnet build --configuration $(buildConfiguration) /property:Version=1.0.$(Build.BuildNumber)
   displayName: 'dotnet build $(buildConfiguration)'
   
-- script: dotnet nuget push ./IrcClientCore/bin/Debug/*.nupkg -k $(NUGET_KEY) --source https://api.nuget.org/v3/index.json'
+- script: dotnet nuget push ./IrcClientCore/bin/Debug/*.nupkg -k $(NUGET_KEY) --source https://api.nuget.org/v3/index.json
   displayName: dotnet nuget push
