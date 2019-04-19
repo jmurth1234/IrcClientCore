@@ -10,8 +10,11 @@ pool:
   vmImage: 'Ubuntu-16.04'
 
 variables:
-  buildConfiguration: 'Release'
+  buildConfiguration: 'Debug'
 
 steps:
-- script: dotnet build --configuration $(buildConfiguration)
+- script: dotnet build --configuration $(buildConfiguration) /property=1.0.$(Build.BuildNumber)-dev
   displayName: 'dotnet build $(buildConfiguration)'
+  
+- script: dotnet nuget push ./IrcClientCore/bin/Debug/*.nupkg -k $(NUGET_KEY) --source https://api.nuget.org/v3/index.json'
+  displayName: dotnet nuget push
