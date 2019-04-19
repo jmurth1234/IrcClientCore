@@ -95,7 +95,7 @@ namespace IrcClientCore
 
                     if (IsReconnecting)
                         Connect();
-                }).Start();
+                });
             }
             else
             {

@@ -163,9 +163,9 @@ namespace ConsoleIrcClient
             _program.SwitchChannel(args[1]);
         }
 
-        public override string[] GetCompletions(string channelName, string word)
+        public override string[] GetCompletions(string channel, string word)
         {
-            var channels = Irc.ChannelList.Select(channel => channel.Name);
+            var channels = Irc.ChannelList.Select(chan => chan.Name);
             var completions = channels.Where(name => name.ToLower().Contains(word.ToLower()));
             return completions.ToArray();
         }

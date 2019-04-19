@@ -50,11 +50,19 @@ namespace IrcClientCore
 
         public Channel this[string channel]
         {
-            get { return Get(channel); }
+            get 
+            {
+                return Get(channel);
+            }
         }
 
         public Channel Get(string channel)
         {
+            if (channel == "" || !Contains(channel))
+            {
+                return ServerLog;
+            }
+
             return this.FirstOrDefault(chan => chan.Name.ToLower() == channel.ToLower());
         }
     }

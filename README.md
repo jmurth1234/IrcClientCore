@@ -28,7 +28,7 @@ standard .NET build tools:
 
 ```
 $ dotnet restore
-$ dotnet run --project .\ConsoleIrcClient\
+$ dotnet run --project ConsoleIrcClient
 ```
 
 ## Contributing
