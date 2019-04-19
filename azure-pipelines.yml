@@ -16,8 +16,6 @@ pool:
   
 name: $(BuildID)-$(Date:yyyyMMdd).$(Rev:r)-dev-$(SourceBranchName)
 
-variables:
-
 steps:
 - script: dotnet build --configuration $(buildConfiguration) /property:Version=1.0.$(Build.BuildNumber)
   displayName: 'dotnet build $(buildConfiguration)'
