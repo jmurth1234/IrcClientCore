@@ -1,0 +1,24 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- master
+
+variables:
+- group: secrets
+- name: 'buildConfiguration'
+  value: 'Debug'
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+  
+name: $(BuildID)-$(Date:yyyyMMdd).$(Rev:r)-dev-$(SourceBranchName)
+
+steps:
+- script: dotnet build --configuration $(buildConfiguration) /property:Version=1.0.$(Build.BuildNumber)
+  displayName: 'dotnet build $(buildConfiguration)'
+  
+- script: dotnet nuget push ./IrcClientCore/bin/Debug/*.nupkg -k $(NUGET_KEY) --source https://api.nuget.org/v3/index.json
+  displayName: dotnet nuget push
