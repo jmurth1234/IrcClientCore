@@ -13,7 +13,7 @@ variables:
   buildConfiguration: 'Debug'
 
 steps:
-- script: dotnet build --configuration $(buildConfiguration) /property=1.0.$(Build.BuildNumber)-dev
+- script: dotnet build --configuration $(buildConfiguration) /property:Version=1.0.$(Build.BuildNumber)-dev
   displayName: 'dotnet build $(buildConfiguration)'
   
 - script: dotnet nuget push ./IrcClientCore/bin/Debug/*.nupkg -k $(NUGET_KEY) --source https://api.nuget.org/v3/index.json'
