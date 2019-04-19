@@ -9,7 +9,7 @@ trigger:
 pool:
   vmImage: 'Ubuntu-16.04'
   
-name: $(Date:yyyyMMdd)-$(Rev:r)-dev-$(SourceBranchName)
+name: $(BuildID)-$(Date:yyyyMMdd).$(Rev:r)-dev-$(SourceBranchName)
 
 variables:
   buildConfiguration: 'Debug'
