@@ -20,11 +20,6 @@ namespace IrcClientCore.Handlers.BuiltIn
 
             Irc.ChannelList[channel].Store.AddUsers(list);
 
-            if (!Irc.Bouncer)
-            {
-                Irc.ChannelList[channel].Store.SortUsers();
-            }
-
             return true;
         }
     }

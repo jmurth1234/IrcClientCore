@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -14,9 +15,8 @@ namespace IrcClientCore
         private bool currentlySorting;
         private string _Topic = "";
 
-        public ObservableCollection<User> Users { get; private set; }
+        public SortableObservableCollection<User> Users { get; private set; }
         public ObservableCollection<string> RawUsers { get; private set; }
-        public ObservableCollection<string> SortedUsers { get; private set; }
 
         public string Topic
         {
@@ -34,107 +34,38 @@ namespace IrcClientCore
         public ChannelStore(Channel channel)
         {
             this.Channel = channel;
-            this.Users = new ObservableCollection<User>();
+            this.Users = new SortableObservableCollection<User>();
             this.RawUsers = new ObservableCollection<string>();
-            this.SortedUsers = new ObservableCollection<string>();
         }
 
         public void ClearUsers()
         {
             Users.Clear();
-            SortedUsers.Clear();
         }
 
-        public void SortUsers()
+        public void AddUsers(List<string> usernames)
         {
-            if (currentlySorting) return;
-            currentlySorting = true;
-            var watch = Stopwatch.StartNew();
-
-            SortedUsers.Clear();
-            var owners = new List<string>();
-            var protect = new List<string>();
-            var ops = new List<string>();
-            var hops = new List<string>();
-            var voiced = new List<string>();
-            var users = new List<string>();
-
-            foreach (var user in Users)
-            {
-                try
+            usernames.FindAll(u => HasUser(u))
+                .Select(user => new User { FullUsername = user })
+                .ToList()
+                .ForEach(user =>
                 {
-                    if (user.Prefix.StartsWith("~"))
-                    {
-                        owners.Add($"~{user.Nick}");
-                    }
-                    else if (user.Prefix.StartsWith("&"))
-                    {
-                        protect.Add($"&{user.Nick}");
-                    }
-                    else if (user.Prefix.StartsWith("@"))
-                    {
-                        ops.Add($"@{user.Nick}");
-                    }
-                    else if (user.Prefix.StartsWith("%"))
-                    {
-                        hops.Add($"@{user.Nick}");
-                    }
-                    else if (user.Prefix.StartsWith("+"))
-                    {
-                        voiced.Add($"+{user.Nick}");
-                    }
-                    else
-                    {
-                        users.Add(user.Nick);
-                    }
+                    ChangePrefix(user.Nick, user.Prefix);
                 }
-                catch (NullReferenceException ex)
+            );
+
+            var users = usernames
+                .FindAll(u => !HasUser(u))
+                .Select(user => new User
                 {
-                    if (user.Nick.Length != 1)
-                    {
-                        Debug.WriteLine($"User's nickname {user.Nick} with prefix type {user.Prefix.Substring(0, 1)} is unhandled");
-                    }
-                }
-            }
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-            Debug.WriteLine("Elapsed time to sort: " + elapsedMs + "ms");
-            watch.Start();
+                    FullUsername = user,
+                })
+                .ToList();
 
-            owners.Sort();
-            protect.Sort();
-            ops.Sort();
-            hops.Sort();
-            voiced.Sort();
-            users.Sort();
-
-            owners.ForEach(SortedUsers.Add);
-            protect.ForEach(SortedUsers.Add);
-            ops.ForEach(SortedUsers.Add);
-            hops.ForEach(SortedUsers.Add);
-            voiced.ForEach(SortedUsers.Add);
-            users.ForEach(SortedUsers.Add);
-
-            watch.Stop();
-            var elapsedMsOrder = watch.ElapsedMilliseconds;
-
-            Debug.WriteLine("Elapsed time to order: " + elapsedMsOrder + "ms");
-
-            Debug.WriteLine("Total time: " + (elapsedMsOrder + elapsedMs) + "ms");
-            currentlySorting = false;
+            Users.AddRange(users);
         }
 
-        public void AddUsers(List<string> users)
-        {
-            users.ForEach(AddUser);
-        }
-
-        private void AddUser(string username)
-        {
-            AddUser(username, false);
-        }
-
-        public void AddUser(string username, bool sort)
+        public void AddUser(string username)
         {
             if (username.Length == 0)
             {
@@ -148,11 +79,10 @@ namespace IrcClientCore
                     FullUsername = username,
                 };
 
-                RawUsers.Add(user.Nick);
-
                 Users.Add(user);
-                if (sort)
-                    SortUsers();
+                Users.Sort();
+
+                RawUsers.Add(user.Nick);
             }
         }
 
@@ -171,7 +101,7 @@ namespace IrcClientCore
 
             RemoveUser(user.Nick);
 
-            AddUser(user.Prefix + newNick, true);
+            AddUser(user.Prefix + newNick);
         }
 
         public void ChangePrefix(string nick, string newPrefix)
@@ -181,7 +111,7 @@ namespace IrcClientCore
             var user = Users.First(u => u.Nick == nick);
 
             RemoveUser(nick);
-            AddUser(newPrefix + user.Nick, true);
+            AddUser(newPrefix + user.Nick);
         }
 
         internal string GetPrefix(string user)
@@ -199,8 +129,6 @@ namespace IrcClientCore
 
                 Users.Remove(user);
                 RawUsers.Remove(user.Nick);
-
-                SortUsers();
             }
         }
 
@@ -210,4 +138,47 @@ namespace IrcClientCore
         }
     }
 
+    /// <summary>
+    /// SortableObservableCollection is a ObservableCollection with some extensions.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class SortableObservableCollection<T> : ObservableCollection<T>
+    {
+        /// <summary>
+        /// Adds a range of items to the observable collection.
+        /// Instead of iterating through all elements and adding them
+        /// one by one (which causes OnPropertyChanged events), all
+        /// the items gets added instantly without firing events.
+        /// After adding all elements, the OnPropertyChanged event will be fired.
+        /// </summary>
+        /// <param name="enumerable"></param>
+        public void AddRange(IEnumerable<T> enumerable)
+        {
+            CheckReentrancy();
+
+            int startIndex = Count;
+
+            foreach (var item in enumerable)
+                Items.Add(item);
+
+            (Items as List<T>).Sort();
+
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new List<T>(enumerable), startIndex));
+            OnPropertyChanged(new PropertyChangedEventArgs("Count"));
+            OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+        }
+
+        public void Sort()
+        {
+            CheckReentrancy();
+
+            var old = new List<T>(Items);
+            (Items as List<T>).Sort();
+
+            // publish the changed order of the list
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, old, Items, 0));
+            OnPropertyChanged(new PropertyChangedEventArgs("Count"));
+            OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+        }
+    }
 }

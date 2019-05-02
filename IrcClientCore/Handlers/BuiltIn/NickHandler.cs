@@ -37,7 +37,7 @@ namespace IrcClientCore.Handlers.BuiltIn
                         Irc.AddMessage(channel.Name, msg);
 
                         users.RemoveUser(username);
-                        users.AddUser(parsedLine.TrailMessage.TrailingContent, true);
+                        users.AddUser(parsedLine.TrailMessage.TrailingContent);
                     }
                 }
             }

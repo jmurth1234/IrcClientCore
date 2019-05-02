@@ -27,7 +27,7 @@ namespace IrcClientCore.Handlers.BuiltIn
 
             Irc.AddMessage(channel, msg);
 
-            Irc.ChannelList[channel].Store.AddUser(parsedLine.PrefixMessage.Nickname, true);
+            Irc.ChannelList[channel].Store.AddUser(parsedLine.PrefixMessage.Nickname);
             return true;
         }
     }

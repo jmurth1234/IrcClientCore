@@ -308,19 +308,16 @@ namespace IrcClientCore
             return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
         }
 
-        public ObservableCollection<string> GetChannelUsers(string channel)
+        public ObservableCollection<User> GetChannelUsers(string channel)
         {
             if (!ChannelList.Contains(channel))
             {
-                return new ObservableCollection<string>();
+                return new ObservableCollection<User>();
             }
 
             var store = ChannelList[channel].Store;
 
-            if (store.SortedUsers.Count == 0)
-                store.SortUsers();
-
-            return store.SortedUsers;
+            return store.Users;
         }
 
         public ObservableCollection<string> GetRawUsers(string channel)

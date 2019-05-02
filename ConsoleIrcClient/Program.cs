@@ -119,8 +119,6 @@ namespace ConsoleIrcClient
             else
             {
                 _channelBuffers = _socket.ChannelList[CurrentChannel].Buffers;
-                _socket.ChannelList[CurrentChannel].Store.SortUsers();
-
             }
 
             PrintMessages(_channelBuffers);

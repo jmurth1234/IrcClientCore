@@ -1,20 +1,29 @@
+using System;
+using System.Collections.Generic;
+
 namespace IrcClientCore
 {
-    public class User
+    public class User : IComparable 
     {
+        internal static Dictionary<string, int> PrefixMap = new Dictionary<string, int>()
+        {
+            {"~", 5},
+            {"&", 4},
+            {"@", 3},
+            {"%", 2},
+            {"+", 1},
+            {"", 0}
+        };
+
         public string Prefix
         {
             get
             {
                 var prefix = "";
 
-                if (FullUsername.Length > 2)
+                if (FullUsername.Length > Nick.Length)
                 {
-                    prefix = FullUsername[0] + "" + FullUsername[1];
-                }
-                else if (FullUsername.Length > 1)
-                {
-                    prefix = FullUsername[0] + "";
+                    prefix = $"{FullUsername[0]}";
                 }
 
                 return prefix;
@@ -27,8 +36,26 @@ namespace IrcClientCore
 
         public override string ToString()
         {
-            return Nick;
+            return FullUsername;
         }
 
+        public int CompareTo(object obj)
+        {
+            if (obj == null) return 1;
+            
+            User otherUser = obj as User;
+            if (otherUser != null) 
+            {
+                if (this.Prefix.Equals(otherUser.Prefix))
+                {
+                    return string.Compare(this.Nick, otherUser.Nick);
+                }
+                else
+                {
+                    return PrefixMap[otherUser.Prefix].CompareTo(PrefixMap[this.Prefix]);
+                }
+            }
+            else throw new ArgumentException("Object is not a User");
+        }
     }
 }
