@@ -63,6 +63,7 @@ namespace IrcClientCore
                 .ToList();
 
             Users.AddRange(users);
+            users.ForEach(user => RawUsers.Add(user.Nick));
         }
 
         public void AddUser(string username)
