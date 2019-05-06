@@ -35,9 +35,13 @@ namespace IrcClientCore.Handlers.BuiltIn
 
                             break;
                         case "-o":
-                            if (currentPrefix.Length > 0 && currentPrefix[1] == '+')
+                            if (currentPrefix.Length > 1 && currentPrefix[1] == '+')
                             {
                                 prefix = "+";
+                            }
+                            else
+                            {
+                                prefix = "";
                             }
 
                             break;
