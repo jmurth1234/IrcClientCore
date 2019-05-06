@@ -21,7 +21,15 @@ namespace IrcClientCore
 
         public bool Contains(string channel)
         {
-            return this.Any(chan => chan.Name.ToLower() == channel.ToLower() );
+            return this.Any(chan =>
+            {
+                if (chan.Name != null)
+                {
+                    return chan.Name.ToLower() == channel.ToLower();
+                }
+
+                return channel == "";
+            });
         }
 
         public void Insert(int position, string channel)
