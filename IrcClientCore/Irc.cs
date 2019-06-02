@@ -273,7 +273,7 @@ namespace IrcClientCore
             return ChannelList.Contains(channel);
         }
 
-        public virtual ObservableCollection<Message> CreateChannelBuffer(string channel)
+        public virtual ICollection<Message> CreateChannelBuffer(string channel)
         {
             return new ObservableCollection<Message>();
         }

@@ -114,11 +114,11 @@ namespace ConsoleIrcClient
 
             if (channel == "")
             {
-                _channelBuffers = _socket.ChannelList.ServerLog.Buffers;
+                _channelBuffers = _socket.ChannelList.ServerLog.Buffers as ObservableCollection<Message>;
             }
             else
             {
-                _channelBuffers = _socket.ChannelList[CurrentChannel].Buffers;
+                _channelBuffers = _socket.ChannelList[CurrentChannel].Buffers as ObservableCollection<Message>;
             }
 
             PrintMessages(_channelBuffers);

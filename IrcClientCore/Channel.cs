@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -69,7 +70,7 @@ namespace IrcClientCore
         private int _unreadCount;
 
         public ChannelStore Store { get; private set; }
-        public ObservableCollection<Message> Buffers { get; private set; }
+        public ICollection<Message> Buffers { get; private set; }
 
         public bool ServerLog => Name == "Server";
 
