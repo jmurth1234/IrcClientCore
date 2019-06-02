@@ -50,6 +50,7 @@ namespace IrcClientCore
         }
 
         public bool Bouncer { get; internal set; }
+        public bool SupportsSelfMsg { get; internal set; }
         internal string WhoisDestination { get; set; }
         public bool DebugMode { get; protected set; }
 
@@ -170,7 +171,9 @@ namespace IrcClientCore
             msg.Text = message;
             msg.Type = MessageType.Action;
             msg.User = Server.Username;
-            AddMessage(channel, msg);
+
+            if (!SupportsSelfMsg)
+                AddMessage(channel, msg);
 
             WriteLine(string.Format("PRIVMSG {0} :\u0001ACTION {1}\u0001", channel, message));
         }
@@ -183,8 +186,9 @@ namespace IrcClientCore
             msg.User = Server.Username;
             msg.Type = MessageType.Normal;
 
-            if (ChannelList.Contains(channel))
-                ChannelList[channel].Buffers.Add(msg);
+            // if the server doesn't support self message add it to the buffer
+            if (!SupportsSelfMsg)
+                AddMessage(channel, msg);
 
             WriteLine(string.Format("PRIVMSG {0} :{1}", channel, message));
         }

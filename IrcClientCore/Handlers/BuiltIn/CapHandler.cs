@@ -29,6 +29,18 @@ namespace IrcClientCore.Handlers.BuiltIn
                     requirements += "multi-prefix ";
                 }
 
+                if (compatibleFeatues.Contains("echo-message"))
+                {
+                    requirements += "echo-message ";
+                    Irc.SupportsSelfMsg = true;
+                }
+
+                if (compatibleFeatues.Contains("znc.in/self-message"))
+                {
+                    requirements += "znc.in/self-message ";
+                    Irc.SupportsSelfMsg = true;
+                }
+
                 Irc.WriteLine("CAP REQ :" + requirements);
                 Irc.WriteLine("CAP END");
             }
