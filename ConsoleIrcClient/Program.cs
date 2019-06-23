@@ -43,6 +43,7 @@ namespace ConsoleIrcClient
             ReadLine.PasswordMode = false;
 
             _socket = new IrcSocket(server);
+            _socket.Initialise();
 
             _socket.Connect();
 

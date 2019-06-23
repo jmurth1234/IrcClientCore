@@ -18,7 +18,7 @@ namespace IrcClientCore
         public ChannelsGroup ChannelList { get; set; }
 
         public CommandManager CommandManager { get; private set; }
-        protected HandlerManager HandlerManager { get; }
+        protected HandlerManager HandlerManager { get; private set; }
 
         public string Buffer;
         public bool Transferred = false;
@@ -57,15 +57,18 @@ namespace IrcClientCore
         protected Irc(IrcServer server)
         {
             this.Server = server;
-            ChannelList = new ChannelsGroup(new ObservableCollection<Channel>(), this) { Server = server.Name };
+            IsAuthed = false;
+            DebugMode = false;
+        }
+
+        public async void Initialise()
+        {
+            ChannelList = new ChannelsGroup(new ObservableCollection<Channel>(), this) { Server = Server.Name };
             Mentions = new ObservableCollection<Message>();
             this.CommandManager = new CommandManager(this);
             this.HandlerManager = new HandlerManager(this);
 
-            IsAuthed = false;
-            DebugMode = false;
-
-            AddChannel("Server");
+            await AddChannel("Server");
         }
 
         protected void ConnectionChanged(bool connected)
