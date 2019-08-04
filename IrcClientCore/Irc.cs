@@ -258,7 +258,7 @@ namespace IrcClientCore
 
         public async Task<bool> AddChannel(string channel)
         {
-            if (channel == "")
+            if (channel == "" || channel == null)
             {
                 return false;
             }

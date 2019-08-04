@@ -19,12 +19,6 @@ namespace IrcClientCore.Handlers.BuiltIn
             {
                 destination = parsedLine.PrefixMessage.Nickname;
             }
-
-            if (!Irc.ChannelList.Contains(destination))
-            {
-                await Irc.AddChannel(destination);
-            }
-
             var msg = new Message();
             msg.Channel = destination;
             msg.Type = Type;
@@ -63,6 +57,11 @@ namespace IrcClientCore.Handlers.BuiltIn
             }
             else
             {
+                if (!Irc.ChannelList.Contains(destination))
+                {
+                    await Irc.AddChannel(destination);
+                }
+
                 Irc.AddMessage(destination, msg);
             }
             return true;

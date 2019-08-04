@@ -21,6 +21,10 @@ namespace IrcClientCore
 
         public bool Contains(string channel)
         {
+            if (channel == null)
+            {
+                return false;
+            }
             return this.Any(chan =>
             {
                 if (chan.Name != null)
@@ -34,7 +38,7 @@ namespace IrcClientCore
 
         public void Insert(int position, string channel)
         {
-            if (channel == "Server" && !_serverAdded)
+            if (channel == "Server" || channel == null && !_serverAdded)
             {
                 ServerLog = new Channel(Irc, channel)
                 {

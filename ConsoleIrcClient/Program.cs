@@ -155,7 +155,7 @@ namespace ConsoleIrcClient
             if (args.Length != 2)
             {
                 _program.SwitchChannel("");
-                ClientMessage(channel, "List of channels: " + GetCompletions(channel, ""));
+                ClientMessage(channel, "List of channels: " + string.Join(',', GetCompletions(channel, "")));
                 return;
             }
 
