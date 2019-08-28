@@ -2,6 +2,7 @@ name: .NET Core CI
 
 on: [push]
 
+
 jobs:
   build:
 
@@ -13,5 +14,7 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 2.2.108
+    - name: Print env vars
+      run: printenv
     - name: Build with dotnet
       run: dotnet build --configuration Release /property:Version=1.0.$(Build.BuildNumber)
