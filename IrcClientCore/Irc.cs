@@ -35,7 +35,8 @@ namespace IrcClientCore
 
         public Action<List<ChannelListItem>> HandleDisplayChannelList { get; set; }
 
-        public string Nickname {
+        public string Nickname
+        {
             get => Server.Username;
             set
             {

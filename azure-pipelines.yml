@@ -21,4 +21,7 @@ steps:
   displayName: 'dotnet build $(buildConfiguration)'
   
 - script: dotnet nuget push ./IrcClientCore/bin/Debug/*.nupkg -k $(NUGET_KEY) --source https://api.nuget.org/v3/index.json
-  displayName: dotnet nuget push
+  displayName: dotnet nuget push: Package
+  
+- script: dotnet nuget push ./IrcClientCore/bin/Debug/*.snupkg -k $(NUGET_KEY) --source https://api.nuget.org/v3/index.json
+  displayName: dotnet nuget push: Symbols
