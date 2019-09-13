@@ -131,6 +131,7 @@ namespace IrcClientCore
         protected async Task HandleLine(string receivedData)
         {
             if (DebugMode) Debug.WriteLine(receivedData);
+            if (receivedData == null) return;
             if (receivedData.Contains("Nickname is already in use") && !Bouncer)
             {
                 this.Server.Username += "_";

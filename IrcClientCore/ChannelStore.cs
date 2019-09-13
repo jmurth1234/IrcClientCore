@@ -164,9 +164,9 @@ namespace IrcClientCore
 
             (Items as List<T>).Sort();
 
-            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new List<T>(enumerable), startIndex));
-            OnPropertyChanged(new PropertyChangedEventArgs("Count"));
-            OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+            // OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new List<T>(enumerable), startIndex));
+            // OnPropertyChanged(new PropertyChangedEventArgs("Count"));
+            // OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
         }
 
         public void Sort()

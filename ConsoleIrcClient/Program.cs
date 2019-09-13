@@ -50,6 +50,7 @@ namespace ConsoleIrcClient
             var handler = _socket.CommandManager;
 
             handler.RegisterCommand("/switch", new SwitchCommand(this));
+            handler.RegisterCommand("/reconnect", new ReconnectCommand());
 
             ReadLine.AutoCompletionHandler = (text, index) =>
             {
@@ -167,6 +168,13 @@ namespace ConsoleIrcClient
             var channels = Irc.ChannelList.Select(chan => chan.Name);
             var completions = channels.Where(name => name.ToLower().Contains(word.ToLower()));
             return completions.ToArray();
+        }
+    }
+    internal class ReconnectCommand : BaseCommand
+    {
+        public override void RunCommand(string channel, string[] args)
+        {
+            Irc.DisconnectAsync(attemptReconnect: true);
         }
     }
 }
