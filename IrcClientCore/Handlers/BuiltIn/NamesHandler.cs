@@ -35,7 +35,7 @@ namespace IrcClientCore.Handlers.BuiltIn
                     await Irc.AddChannel(channel);
                 }
 
-                Irc.ChannelList[channel].Store.AddUsers(_namesTable[channel]);
+                Irc.ChannelList[channel].Store.ReplaceUsers(_namesTable[channel]);
 
                 _namesTable.Remove(channel);
             }

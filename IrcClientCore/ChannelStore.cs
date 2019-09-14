@@ -41,18 +41,12 @@ namespace IrcClientCore
         public void ClearUsers()
         {
             Users.Clear();
+            RawUsers.Clear();
         }
 
-        public void AddUsers(List<string> usernames)
+        public void ReplaceUsers(List<string> usernames)
         {
-            usernames.FindAll(u => HasUser(u))
-                .Select(user => new User { FullUsername = user })
-                .ToList()
-                .ForEach(user =>
-                {
-                    ChangePrefix(user.Nick, user.Prefix);
-                }
-            );
+            ClearUsers();
 
             var users = usernames
                 .FindAll(u => !HasUser(u))
@@ -164,9 +158,9 @@ namespace IrcClientCore
 
             (Items as List<T>).Sort();
 
-            // OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new List<T>(enumerable), startIndex));
-            // OnPropertyChanged(new PropertyChangedEventArgs("Count"));
-            // OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new List<T>(enumerable), startIndex));
+            OnPropertyChanged(new PropertyChangedEventArgs("Count"));
+            OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
         }
 
         public void Sort()
