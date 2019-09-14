@@ -51,6 +51,7 @@ namespace ConsoleIrcClient
 
             handler.RegisterCommand("/switch", new SwitchCommand(this));
             handler.RegisterCommand("/reconnect", new ReconnectCommand());
+            handler.RegisterCommand("/users", new UsersCommand());
 
             ReadLine.AutoCompletionHandler = (text, index) =>
             {
@@ -156,7 +157,7 @@ namespace ConsoleIrcClient
             if (args.Length != 2)
             {
                 _program.SwitchChannel("");
-                ClientMessage(channel, "List of channels: " + string.Join(',', GetCompletions(channel, "")));
+                ClientMessage(channel, "List of channels: " + string.Join(", ", GetCompletions(channel, "")));
                 return;
             }
 
@@ -175,6 +176,14 @@ namespace ConsoleIrcClient
         public override void RunCommand(string channel, string[] args)
         {
             Irc.DisconnectAsync(attemptReconnect: true);
+        }
+    }
+    internal class UsersCommand : BaseCommand
+    {
+        public override void RunCommand(string channel, string[] args)
+        {
+            var chan = Irc.ChannelList[channel];
+            ClientMessage(channel, "List of users: " + string.Join(", ", chan.Store.Users));
         }
     }
 }

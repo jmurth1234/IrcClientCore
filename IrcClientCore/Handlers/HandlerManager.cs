@@ -16,8 +16,8 @@ namespace IrcClientCore.Handlers
 
         private readonly string[] _whoisCmds = new string[] { "311", "319", "318", "312", "330", "671", "317", "401" };
         private readonly string[] _topicCmds = new string[] { "TOPIC", "332" };
+        private readonly string[] _namesCmds = new string[] { "353", "366" };
         private readonly string[] _listCmds = new string[] { "321", "322", "323" };
-
 
         public HandlerManager(Irc irc)
         {
@@ -34,7 +34,6 @@ namespace IrcClientCore.Handlers
             RegisterHandler("JOIN", new JoinHandler());
             RegisterHandler("PART", new PartHandler());
             RegisterHandler("KICK", new KickHandler());
-            RegisterHandler("353", new NamesHandler());
             RegisterHandler("QUIT", new QuitHandler());
             RegisterHandler("MODE", new ModeHandler());
             RegisterHandler("376", new ServerJoinedHandler());
@@ -42,6 +41,7 @@ namespace IrcClientCore.Handlers
             MultiRegisterHandler(_whoisCmds, new WhoisHandler());
             MultiRegisterHandler(_topicCmds, new TopicHandler());
             MultiRegisterHandler(_listCmds, new ListHandler());
+            MultiRegisterHandler(_namesCmds, new NamesHandler());
         }
 
         private void MultiRegisterHandler(string[] commands, BaseHandler handler, HandlerPriority priority = HandlerPriority.MEDIUM)
