@@ -23,6 +23,7 @@ namespace IrcClientCore
             if (Server == null)
                 return;
 
+            IsConnecting = true;
             IsAuthed = false;
             ReadOrWriteFailed = false;
             _conn = new TcpClient();
@@ -56,6 +57,8 @@ namespace IrcClientCore
                     _clientStreamReader = new StreamReader(_stream);
                     _clientStreamWriter = new StreamWriter(_stream);
 
+                    IsConnecting = false;
+                    IsConnected = true;
                     AttemptAuth();
 
                     while (true)
@@ -80,10 +83,11 @@ namespace IrcClientCore
         public override void DisconnectAsync(string msg = "Powered by WinIRC", bool attemptReconnect = false)
         {
             WriteLine("QUIT :" + msg);
+            IsConnected = false;
 
             if (Server.ShouldReconnect && attemptReconnect)
             {
-                IsReconnecting = true;
+                IsConnecting = true;
                 ReconnectionAttempts++;
 
                 Task.Run(async () =>
@@ -93,13 +97,13 @@ namespace IrcClientCore
                     else
                         await Task.Delay(60000);
 
-                    if (IsReconnecting)
+                    if (IsConnecting)
                         Connect();
                 });
             }
             else
             {
-                IsConnected = false;
+                IsConnecting = false;
                 HandleDisconnect?.Invoke(this);
             }
         }

@@ -4,12 +4,14 @@ using IrcClientCore.Handlers.BuiltIn;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace IrcClientCore
 {
-    public abstract class Irc
+    public abstract class Irc : INotifyPropertyChanged
     {
         public IrcServer Server { get; set; }
 
@@ -23,10 +25,31 @@ namespace IrcClientCore
         public string Buffer;
         public bool Transferred = false;
 
-        public bool IsReconnecting { get; set; }
+        public bool IsConnecting
+        {
+            get => _isConnecting;
+            set
+            {
+                _isConnecting = value;
+                NotifyPropertyChanged(nameof(IsConnecting));
+            }
+        }
 
-        public bool IsConnected = false;
+        public bool IsReconnecting => IsConnecting;
+
+        public bool IsConnected
+        {
+            get => _isConnected;
+            set
+            {
+                _isConnected = value;
+                NotifyPropertyChanged(nameof(IsConnected));
+            }
+        }
+
+        private bool _isConnected = false;
         protected int ReconnectionAttempts;
+        private bool _isConnecting;
 
         public bool ReadOrWriteFailed { get; set; }
 
@@ -141,7 +164,7 @@ namespace IrcClientCore
 
             if (receivedData.StartsWith("ERROR"))
             {
-                if (!IsReconnecting)
+                if (!IsConnecting)
                 {
                     ReadOrWriteFailed = true;
 
@@ -342,6 +365,12 @@ namespace IrcClientCore
         public void AddMention(Message message)
         {
             Mentions.Add(message);
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
