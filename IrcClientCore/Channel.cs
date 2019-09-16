@@ -71,6 +71,7 @@ namespace IrcClientCore
 
         public ChannelStore Store { get; private set; }
         public ICollection<Message> Buffers { get; private set; }
+        public Irc Irc { get; }
 
         public bool ServerLog => Name == "Server";
 
@@ -79,6 +80,8 @@ namespace IrcClientCore
             Name = channel;
             Store = new ChannelStore(this);
             Buffers = irc.CreateChannelBuffer(Name);
+
+            this.Irc = irc;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
