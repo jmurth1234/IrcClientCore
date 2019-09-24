@@ -80,7 +80,7 @@ namespace IrcClientCore.Handlers
         {
             return Handlers
                     .Where(handler => handler.Commands.Contains(command))
-                    .OrderByDescending(handler => (int)handler.Priority).ToList().Length > 0;
+                    .OrderByDescending(handler => (int)handler.Priority).ToList().Count > 0;
         }
 
     }
