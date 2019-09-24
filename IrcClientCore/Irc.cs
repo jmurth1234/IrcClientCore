@@ -182,7 +182,7 @@ namespace IrcClientCore
             ReconnectionAttempts = 0;
 
             var parsedLine = new IrcMessage(receivedData);
-            ProcessLine(parsedLine);
+            await ProcessLine(parsedLine);
         }
 
 
