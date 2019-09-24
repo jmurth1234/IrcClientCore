@@ -76,5 +76,12 @@ namespace IrcClientCore.Handlers
             return new List<BaseHandler>() { DefaultHandler };
         }
 
+        public bool HasHandler(string command)
+        {
+            return Handlers
+                    .Where(handler => handler.Commands.Contains(command))
+                    .OrderByDescending(handler => (int)handler.Priority).ToList().Length > 0;
+        }
+
     }
 }
