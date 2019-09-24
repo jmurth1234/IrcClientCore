@@ -100,7 +100,7 @@ namespace IrcClientCore.Commands
             else if (args[0].StartsWith("/"))
             {
                 var command = GetCommand(channel, args[0]);
-                command.RunCommand(channel, args);
+                command?.RunCommand(channel, args);
             }
         }
 
