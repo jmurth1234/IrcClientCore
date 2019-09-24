@@ -186,7 +186,7 @@ namespace IrcClientCore
         }
 
 
-        public virtual async void ProcessLine(IrcMessage parsedLine)
+        public virtual async Task ProcessLine(IrcMessage parsedLine)
         {
             var handlers = HandlerManager.GetHandlers(parsedLine.CommandMessage.Command);
             foreach (var handler in handlers)
