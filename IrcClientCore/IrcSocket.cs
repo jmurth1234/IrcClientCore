@@ -64,7 +64,7 @@ namespace IrcClientCore
                     while (true)
                     {
                         var line = await _clientStreamReader.ReadLineAsync();
-                        await HandleLine(line);
+                        await RecieveLine(line);
                     }
                 }
             }

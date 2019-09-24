@@ -151,7 +151,7 @@ namespace IrcClientCore
             }
         }
 
-        protected async Task HandleLine(string receivedData)
+        protected async Task RecieveLine(string receivedData)
         {
             if (DebugMode) Debug.WriteLine(receivedData);
             if (receivedData == null) return;
@@ -179,10 +179,15 @@ namespace IrcClientCore
                 return;
             }
 
-            var parsedLine = new IrcMessage(receivedData);
-
             ReconnectionAttempts = 0;
 
+            var parsedLine = new IrcMessage(receivedData);
+            ProcessLine(parsedLine);
+        }
+
+
+        public virtual async void ProcessLine(IrcMessage parsedLine)
+        {
             var handlers = HandlerManager.GetHandlers(parsedLine.CommandMessage.Command);
             foreach (var handler in handlers)
             {
@@ -190,7 +195,6 @@ namespace IrcClientCore
                 if (!cont) break;
             }
         }
-
 
         public void SendAction(string channel, string message)
         {
