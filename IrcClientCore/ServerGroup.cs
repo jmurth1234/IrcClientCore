@@ -29,7 +29,7 @@ namespace IrcClientCore
             {
                 if (chan.Name != null)
                 {
-                    return chan.Name.ToLower() == channel.ToLower();
+                    return chan.NameLower == channel.ToLower();
                 }
 
                 return channel == "";
@@ -75,7 +75,7 @@ namespace IrcClientCore
                 return ServerLog;
             }
 
-            return this.FirstOrDefault(chan => chan.Name.ToLower() == channel.ToLower());
+            return this.FirstOrDefault(chan => chan.NameLower == channel.ToLower());
         }
     }
 }

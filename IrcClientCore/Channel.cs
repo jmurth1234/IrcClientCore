@@ -15,6 +15,7 @@ namespace IrcClientCore
         public string Server { get; set; }
         [DataMember]
         public string Name { get; set; }
+        public string NameLower => Name.ToLower();
         [DataMember]
         public bool HasUnread
         {
@@ -96,6 +97,7 @@ namespace IrcClientCore
             msg.User = "";
             msg.Type = MessageType.Info;
             msg.Text = text;
+            msg.Channel = Name;
 
             Buffers.Add(msg);
         }

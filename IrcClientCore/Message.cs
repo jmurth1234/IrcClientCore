@@ -48,6 +48,7 @@ namespace IrcClientCore
         }
 
         public string Channel { get; set; }
+        public string ChannelLowerCase => Channel.ToLower();
         
         private string _username = "";
         private DateTime _date;

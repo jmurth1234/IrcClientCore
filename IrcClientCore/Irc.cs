@@ -282,6 +282,8 @@ namespace IrcClientCore
                 }
             }
 
+            msg.Channel = channel;
+
             chan.Buffers.Add(msg);
         }
 
@@ -298,7 +300,7 @@ namespace IrcClientCore
 
                 var i = 0;
 
-                while (i < ChannelList.Count && comparer.Compare(ChannelList[i].Name.ToLower(), channel.ToLower()) < 0)
+                while (i < ChannelList.Count && comparer.Compare(ChannelList[i].NameLower, channel.ToLower()) < 0)
                     i++;
 
                 ChannelList.Insert(i, channel);

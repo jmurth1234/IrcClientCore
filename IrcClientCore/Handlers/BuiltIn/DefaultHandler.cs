@@ -19,6 +19,7 @@ namespace IrcClientCore.Handlers.BuiltIn
             {
                 Text = parsedLine.OriginalMessage,
                 Type = MessageType.Info,
+                Channel = "Server",
                 User = ""
             };
 
