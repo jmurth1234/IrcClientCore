@@ -84,6 +84,6 @@ namespace IrcClientCore
 
     public enum MessageType
     {
-        Normal, Action, Info, JoinPart, Notice
+        Normal, Action, Info, JoinPart, Notice, MOTD
     }
 }

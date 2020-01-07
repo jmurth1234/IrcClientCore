@@ -13,6 +13,7 @@ namespace IrcClientCore
 {
     public abstract class Irc : INotifyPropertyChanged
     {
+        public string MOTD { get; internal set; }
         public IrcServer Server { get; set; }
 
         public bool IsAuthed { get; set; }

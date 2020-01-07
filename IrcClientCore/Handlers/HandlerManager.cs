@@ -18,6 +18,7 @@ namespace IrcClientCore.Handlers
         private readonly string[] _topicCmds = new string[] { "TOPIC", "332" };
         private readonly string[] _namesCmds = new string[] { "353", "366" };
         private readonly string[] _listCmds = new string[] { "321", "322", "323" };
+        private readonly string[] _motdCmds = new string[] { "375", "372", "376" };
 
         public HandlerManager(Irc irc)
         {
@@ -42,6 +43,7 @@ namespace IrcClientCore.Handlers
             MultiRegisterHandler(_topicCmds, new TopicHandler());
             MultiRegisterHandler(_listCmds, new ListHandler());
             MultiRegisterHandler(_namesCmds, new NamesHandler());
+            MultiRegisterHandler(_motdCmds, new MotdHandler());
         }
 
         private void MultiRegisterHandler(string[] commands, BaseHandler handler, HandlerPriority priority = HandlerPriority.MEDIUM)
