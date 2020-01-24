@@ -142,8 +142,8 @@ namespace IrcClientCore
         {
             try
             {
-                WriteLine(string.Format("NICK {0}", Server.Username));
-                WriteLine(string.Format("USER {0} {1} * :{2}", Server.Username, "8", Server.Username));
+                WriteLine($"NICK {Server.Username}");
+                WriteLine($"USER {Server.Username} 8 * :{Server.Username}");
             }
             catch (Exception e)
             {
@@ -290,7 +290,7 @@ namespace IrcClientCore
 
         public async Task<bool> AddChannel(string channel)
         {
-            if (channel == "" || channel == null)
+            if (string.IsNullOrEmpty(channel))
             {
                 return false;
             }

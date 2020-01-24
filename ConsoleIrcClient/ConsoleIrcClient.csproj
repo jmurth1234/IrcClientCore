@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="ReadLine" Version="2.0.1" />
-    <PackageReference Include="Terminal.Gui" Version="0.24.0" />
   </ItemGroup>
 
   <ItemGroup>

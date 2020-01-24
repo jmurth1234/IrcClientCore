@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Security;
 
 namespace ConsoleIrcClient
 {
@@ -24,15 +25,44 @@ namespace ConsoleIrcClient
         }
         public static bool AllowPrompt { get; set; }
 
+        public static bool Prompt(string prompt)
+        {
+            return ReadLine.Read($"{prompt} ").StartsWith('y');
+        }
+
         /// <summary>
         /// Main loop for the CLI demo of the IrcClientCore
         /// </summary>
         private void Start()
         {
-            var connect = new ConnectView();
-            connect.Run();
+            IrcServer server = null;
+            if (Prompt("Load Server?"))
+            {
+                var name = ReadLine.Read("Server Name: ");
+                server = Serialize.DeserializeObject<IrcServer>(name);
+            }
 
-            _socket = new IrcSocket(connect.Server);
+            if (server == null)
+            {
+                server = new IrcServer()
+                {
+                    Name = ReadLine.Read("Server Name: "),
+                    Hostname = ReadLine.Read("Server Hostname: "),
+                    Port = Convert.ToInt32(ReadLine.Read("Server Port: ", "6667")),
+                    Ssl = Prompt("Use SSL:"),
+                    IgnoreCertErrors = true,
+                    Username = ReadLine.Read("Username: "),
+                    Password = ReadLine.ReadPassword("Password: "),
+                    Channels = ReadLine.Read("Channels to join (format #channel,#other...): ")
+                };
+               
+                if (Prompt("Save Server?"))
+                {
+                    Serialize.SerializeObject(server, server.Name);
+                }
+            }
+
+            _socket = new IrcSocket(server);
             _socket.Initialise();
 
             _socket.Connect();
@@ -73,6 +103,7 @@ namespace ConsoleIrcClient
         private void HandleChannelList(List<ChannelListItem> list)
         {
             if (Debugger.IsAttached) Debugger.Break();
+            AllowPrompt = true;
         }
 
         internal void SwitchChannel(string channel)

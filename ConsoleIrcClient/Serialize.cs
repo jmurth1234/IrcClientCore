@@ -44,7 +44,7 @@ namespace ConsoleIrcClient
         /// <typeparam name="T"></typeparam>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static T DeSerializeObject<T>(string fileName)
+        public static T DeserializeObject<T>(string fileName)
         {
             if (string.IsNullOrEmpty(fileName)) { return default(T); }
 
