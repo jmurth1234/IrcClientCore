@@ -26,46 +26,43 @@ namespace IrcClientCore
             IsConnecting = true;
             IsAuthed = false;
             ReadOrWriteFailed = false;
-            _conn = new TcpClient();
-            _conn.NoDelay = true;
+            _conn = new TcpClient {NoDelay = true};
             try
             {
                 await _conn.ConnectAsync(Server.Hostname, Server.Port);
 
-                if (_conn.Connected)
+                if (!_conn.Connected) return;
+                if (Server.Ssl)
                 {
-                    if (Server.Ssl)
+                    SslStream sslStream;
+                    if (Server.IgnoreCertErrors)
                     {
-                        SslStream sslStream;
-                        if (Server.IgnoreCertErrors)
-                        {
-                            sslStream = new SslStream(_conn.GetStream(), true, new RemoteCertificateValidationCallback(CheckCert));
-                        }
-                        else
-                        {
-                            sslStream = new SslStream(_conn.GetStream());
-                        }
-
-                        await sslStream.AuthenticateAsClientAsync(Server.Hostname);
-                        _stream = sslStream;
+                        sslStream = new SslStream(_conn.GetStream(), true, new RemoteCertificateValidationCallback(CheckCert));
                     }
                     else
                     {
-                        _stream = _conn.GetStream();
+                        sslStream = new SslStream(_conn.GetStream());
                     }
 
-                    _clientStreamReader = new StreamReader(_stream);
-                    _clientStreamWriter = new StreamWriter(_stream);
+                    await sslStream.AuthenticateAsClientAsync(Server.Hostname);
+                    _stream = sslStream;
+                }
+                else
+                {
+                    _stream = _conn.GetStream();
+                }
 
-                    IsConnecting = false;
-                    IsConnected = true;
-                    AttemptAuth();
+                _clientStreamReader = new StreamReader(_stream);
+                _clientStreamWriter = new StreamWriter(_stream);
 
-                    while (true)
-                    {
-                        var line = await _clientStreamReader.ReadLineAsync();
-                        await RecieveLine(line);
-                    }
+                IsConnecting = false;
+                IsConnected = true;
+                AttemptAuth();
+
+                while (true)
+                {
+                    var line = await _clientStreamReader.ReadLineAsync();
+                    await RecieveLine(line);
                 }
             }
             catch (Exception e)

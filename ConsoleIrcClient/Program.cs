@@ -15,34 +15,24 @@ namespace ConsoleIrcClient
         private ObservableCollection<Message> _channelBuffers;
         private Irc _socket;
 
-        private string CurrentChannel;
-        
+        private string _currentChannel;
+        private AutocompleteHandler _autocompleteHandler;
+
         public static void Main(string[] args)
         {
             new Program().Start();
         }
+        public static bool AllowPrompt { get; set; }
 
         /// <summary>
         /// Main loop for the CLI demo of the IrcClientCore
         /// </summary>
         private void Start()
         {
-            var server = new IrcServer()
-            {
-                Name = "Test server",
-                Hostname = ReadLine.Read("Server Hostname: "),
-                Port = Convert.ToInt32(ReadLine.Read("Server Port: ", "6667")),
-                Ssl = ReadLine.Read("Use SSL: ").StartsWith('y'),
-                IgnoreCertErrors = true,
-                Username = ReadLine.Read("Username: "),
-                Channels = ReadLine.Read("Channels to join (format #channel,#other...): ")
-            };
+            var connect = new ConnectView();
+            connect.Run();
 
-            ReadLine.PasswordMode = true;
-            server.Password += ReadLine.Read("Password: ");
-            ReadLine.PasswordMode = false;
-
-            _socket = new IrcSocket(server);
+            _socket = new IrcSocket(connect.Server);
             _socket.Initialise();
 
             _socket.Connect();
@@ -53,31 +43,9 @@ namespace ConsoleIrcClient
             handler.RegisterCommand("/reconnect", new ReconnectCommand());
             handler.RegisterCommand("/users", new UsersCommand());
 
-            ReadLine.AutoCompletionHandler = (text, index) =>
-            {
-                var array = text.Split(" ");
+            _autocompleteHandler = new AutocompleteHandler(handler);
 
-                if (text.StartsWith("/"))
-                {
-                    var current = array[0];
-
-                    if (array.Length > 1)
-                    {
-                        var completions = handler.GetCompletions(CurrentChannel, array[0], array.Last());
-                        return completions.Length > 0 ? completions : GetUserCompletions(text);
-                    }
-
-                    var commands = handler.CommandList.Where(cmd => cmd.StartsWith(current));
-                    return commands.Select(command => command.Replace("/", "")).ToArray();
-                }
-
-                if ((text.StartsWith("/") && index > 0 || !text.StartsWith("/")) && CurrentChannel != null)
-                {
-                    return GetUserCompletions(text);
-                }
-
-                return new string[0];
-            };
+            ReadLine.AutoCompletionHandler = _autocompleteHandler;
 
             SwitchChannel("");
 
@@ -85,13 +53,20 @@ namespace ConsoleIrcClient
 
             while (!_socket.ReadOrWriteFailed)
             {
-                var prefix = CurrentChannel != null
-                    ? $"[{CurrentChannel} ({_socket.GetChannelUsers(CurrentChannel).Count})] "
+                var prefix = _currentChannel != null
+                    ? $"[{_currentChannel} ({_socket.GetChannelUsers(_currentChannel).Count})] "
                     : "";
+
+                while (!AllowPrompt)
+                {
+                    //wait lmao
+                }
 
                 var line = ReadLine.Read($"{prefix}> "); // Get string from user
                 if (line == "") continue;
-                handler.HandleCommand(CurrentChannel, line);
+                AllowPrompt = false;
+
+                handler.HandleCommand(_currentChannel, line);
             }
         }
 
@@ -100,20 +75,14 @@ namespace ConsoleIrcClient
             if (Debugger.IsAttached) Debugger.Break();
         }
 
-        private string[] GetUserCompletions(string text)
-        {
-            var users = _socket.GetRawUsers(CurrentChannel);
-            var current = text.Split(" ").Last();
-            return users.Where(cmd => cmd.StartsWith(current)).ToArray();
-        }
-
         internal void SwitchChannel(string channel)
         {
             if (_channelBuffers != null)
             {
                 _channelBuffers.CollectionChanged -= ChannelBuffersOnCollectionChanged;
             }
-            CurrentChannel = channel;
+            _currentChannel = channel;
+            _autocompleteHandler.CurrentChannel = channel;
 
             if (channel == "")
             {
@@ -121,12 +90,12 @@ namespace ConsoleIrcClient
             }
             else
             {
-                _channelBuffers = _socket.ChannelList[CurrentChannel].Buffers as ObservableCollection<Message>;
+                _channelBuffers = _socket.ChannelList[_currentChannel].Buffers as ObservableCollection<Message>;
             }
 
             PrintMessages(_channelBuffers);
 
-            _channelBuffers.CollectionChanged += ChannelBuffersOnCollectionChanged;
+            if (_channelBuffers != null) _channelBuffers.CollectionChanged += ChannelBuffersOnCollectionChanged;
         }
 
         private void ChannelBuffersOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -140,6 +109,8 @@ namespace ConsoleIrcClient
             {
                 Console.WriteLine($"[{message.Timestamp}] {message.User} {message.Text}");
             }
+
+            AllowPrompt = true;
         }
     }
 
