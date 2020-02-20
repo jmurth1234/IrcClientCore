@@ -23,6 +23,7 @@ namespace IrcClientCore
         /// <param name="message">The message.</param>
         public IrcMessage(string message)
         {
+            Console.WriteLine(message);
             // remove colours first
             var coloursRegex = new Regex(@"[\x02\x1f\x16\x0f]|\x03\d{0,2}(?:,\d{0,2})?");
             message = coloursRegex.Replace(message, "");
@@ -30,11 +31,29 @@ namespace IrcClientCore
             // split the line into an array
             var lineSplit = message.Split(' ').ToList();
 
-            // get the server time, if it's there
+            // get the metadata, if it's there
             if (message.StartsWith("@"))
             {
                 var timeVar = lineSplit[0];
-                this.ServerTime = timeVar.Replace("@time=", "");
+
+                var points = timeVar.Replace("@", "").Split(';');
+
+                foreach (var entry in points)
+                {
+                    string[] dates = entry.Split('=');
+                    string key = dates[0];
+                    string value = dates[1];
+
+                    if (key == "time")
+                    {
+                        this.ServerTime = value;
+                    }
+
+                    if (key == "msgid")
+                    {
+                        this.Id = value;
+                    }
+                }
                 lineSplit.RemoveAt(0);
             }
 
@@ -72,6 +91,7 @@ namespace IrcClientCore
         /// This could be empty.
         /// </summary>
         public string ServerTime { get; private set; }
+        public string Id { get; private set; }
     }
 
     /// <summary>

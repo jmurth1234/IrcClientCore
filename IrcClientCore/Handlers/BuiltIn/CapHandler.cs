@@ -24,6 +24,11 @@ namespace IrcClientCore.Handlers.BuiltIn
                     requirements += "znc.in/server-time-iso ";
                 }
 
+                if (compatibleFeatues.Contains("server-time"))
+                {
+                    requirements += "server-time ";
+                }
+
                 if (compatibleFeatues.Contains("multi-prefix"))
                 {
                     requirements += "multi-prefix ";
@@ -32,13 +37,19 @@ namespace IrcClientCore.Handlers.BuiltIn
                 if (compatibleFeatues.Contains("echo-message"))
                 {
                     requirements += "echo-message ";
-                    Irc.SupportsSelfMsg = true;
+                    Irc.SupportsMessageTags = true;
+                }
+
+                if (compatibleFeatues.Contains("message-tags"))
+                {
+                    requirements += "message-tags ";
+                    Irc.SupportsMessageTags = true;
                 }
 
                 if (compatibleFeatues.Contains("znc.in/self-message"))
                 {
                     requirements += "znc.in/self-message ";
-                    Irc.SupportsSelfMsg = true;
+                    Irc.SupportsMessageTags = true;
                 }
 
                 Irc.WriteLine("CAP REQ :" + requirements);

@@ -21,6 +21,8 @@ namespace IrcClientCore
             }
         }
 
+        public string MessageId { get; set; }
+
         public string Timestamp {
             get
             {

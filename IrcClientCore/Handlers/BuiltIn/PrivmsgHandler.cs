@@ -35,6 +35,11 @@ namespace IrcClientCore.Handlers.BuiltIn
                 msg.Date = time;
             }
 
+            if (parsedLine.Id != null)
+            {
+                msg.MessageId = parsedLine.Id;
+            }
+
             if (content.Contains("ACTION"))
             {
                 msg.Text = content.Replace("ACTION ", "");
