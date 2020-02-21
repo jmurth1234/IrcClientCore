@@ -23,7 +23,6 @@ namespace IrcClientCore
         /// <param name="message">The message.</param>
         public IrcMessage(string message)
         {
-            Console.WriteLine(message);
             // remove colours first
             var coloursRegex = new Regex(@"[\x02\x1f\x16\x0f]|\x03\d{0,2}(?:,\d{0,2})?");
             message = coloursRegex.Replace(message, "");
@@ -40,19 +39,10 @@ namespace IrcClientCore
 
                 foreach (var entry in points)
                 {
-                    string[] dates = entry.Split('=');
-                    string key = dates[0];
-                    string value = dates[1];
-
-                    if (key == "time")
-                    {
-                        this.ServerTime = value;
-                    }
-
-                    if (key == "msgid")
-                    {
-                        this.Id = value;
-                    }
+                    string[] section = entry.Split('=');
+                    string key = section[0];
+                    string value = section[1];
+                    this.Metadata.Add(key, value);
                 }
                 lineSplit.RemoveAt(0);
             }
@@ -87,11 +77,16 @@ namespace IrcClientCore
         public MessageCommand CommandMessage { get; private set; }
 
         /// <summary>
-        /// Gets the time that might be sent from the server.
+        /// Gets the metadata that might be sent from the server.
         /// This could be empty.
         /// </summary>
-        public string ServerTime { get; private set; }
-        public string Id { get; private set; }
+        public Dictionary<string, string> Metadata { get; } = new Dictionary<string, string>();
+
+        public static readonly string Id = "msgid";
+        public static readonly string Time = "time";
+        public static readonly string Reply = "+draft/reply";
+        public static readonly string Typing = "+draft/typing";
+        public static readonly string React = "+draft/typing";
     }
 
     /// <summary>

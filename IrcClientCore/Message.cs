@@ -1,14 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace IrcClientCore
 {
-    public class Message
+    public class Message : INotifyPropertyChanged
     {
         public Message()
         {
             Date = DateTime.Now;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public DateTime Date
@@ -48,6 +55,23 @@ namespace IrcClientCore
             }
             set => _username = value;
         }
+
+        private int _replies;
+
+        public int Replies
+        {
+            get => _replies;
+            set 
+            {
+                _replies = value;
+                NotifyPropertyChanged();
+                NotifyPropertyChanged("HasReplies");
+            }
+        }
+
+        public bool HasReplies => Replies > 0;
+
+        public string ReplyTo { get; set; }
 
         public string Channel { get; set; }
         public string ChannelLowerCase => Channel.ToLower();

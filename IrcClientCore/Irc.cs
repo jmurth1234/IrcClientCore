@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace IrcClientCore
 {
@@ -32,7 +33,7 @@ namespace IrcClientCore
             set
             {
                 _isConnecting = value;
-                NotifyPropertyChanged(nameof(IsConnecting));
+                NotifyPropertyChanged();
             }
         }
 
@@ -44,7 +45,7 @@ namespace IrcClientCore
             set
             {
                 _isConnected = value;
-                NotifyPropertyChanged(nameof(IsConnected));
+                NotifyPropertyChanged();
             }
         }
 
@@ -83,7 +84,7 @@ namespace IrcClientCore
         {
             this.Server = server;
             IsAuthed = false;
-            DebugMode = false;
+            DebugMode = true;
         }
 
         public async void Initialise()
@@ -226,6 +227,21 @@ namespace IrcClientCore
             WriteLine(string.Format("PRIVMSG {0} :{1}", channel, message));
         }
 
+        public void SendReply(string channel, string message, string reply)
+        {
+            var msg = new Message();
+
+            msg.Text = message;
+            msg.User = Server.Username;
+            msg.Type = MessageType.Normal;
+
+            // if the server doesn't support self message add it to the buffer
+            if (!SupportsMessageTags)
+                AddMessage(channel, msg);
+
+            WriteLine(string.Format("+draft/reply={0} PRIVMSG {1} :{2}", reply, channel, message));
+        }
+
         public string GetChannelTopic(string channel)
         {
             if (ChannelList.Contains(channel))
@@ -280,6 +296,15 @@ namespace IrcClientCore
                 if (msg.Mention)
                 {
                   chan.HasMentions = true;
+                }
+            }
+
+            if (msg.ReplyTo != null)
+            {
+                var item = chan.Buffers.FirstOrDefault(m => m.MessageId == msg.ReplyTo);
+                if (item != null)
+                {
+                    item.Replies += 1;
                 }
             }
 

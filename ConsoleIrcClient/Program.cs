@@ -138,7 +138,8 @@ namespace ConsoleIrcClient
         {
             foreach (var message in messages)
             {
-                Console.WriteLine($"[{message.Timestamp}] {message.User} {message.Text}");
+                var id = message.MessageId != null ? $"{{ID: {message.MessageId.Substring(0, 6)}}}" : "";
+                Console.WriteLine($"[{message.Timestamp}] {id} <{message.User}> {message.Text}");
             }
 
             AllowPrompt = true;

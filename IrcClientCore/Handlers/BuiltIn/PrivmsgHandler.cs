@@ -29,15 +29,20 @@ namespace IrcClientCore.Handlers.BuiltIn
                 msg.User = "";
             }
 
-            if (parsedLine.ServerTime != null)
+            if (parsedLine.Metadata.ContainsKey(IrcMessage.Time))
             {
-                var time = DateTime.Parse(parsedLine.ServerTime);
+                var time = DateTime.Parse(parsedLine.Metadata[IrcMessage.Time]);
                 msg.Date = time;
             }
 
-            if (parsedLine.Id != null)
+            if (parsedLine.Metadata.ContainsKey(IrcMessage.Id))
             {
-                msg.MessageId = parsedLine.Id;
+                msg.MessageId = parsedLine.Metadata[IrcMessage.Id];
+            }
+
+            if (parsedLine.Metadata.ContainsKey(IrcMessage.Reply))
+            {
+                msg.ReplyTo = parsedLine.Metadata[IrcMessage.Reply];
             }
 
             if (content.Contains("ACTION"))
