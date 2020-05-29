@@ -10,11 +10,15 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+    - name: Build Number Generator
+      uses: einaregilsson/build-number@v2
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 2.2.108
+        dotnet-version: 3.1.100
     - name: Print env vars
       run: printenv
     - name: Build with dotnet
-      run: dotnet build --configuration Release /property:Version=1.0.$(Build.BuildNumber)
+      run: dotnet build --configuration Release /property:Version=1.0.$BUILD_NUMBER-dev
+    - name: Publish the package to GPR
+      run: dotnet nuget push ./IrcClientCore/bin/Release/*.nupkg
