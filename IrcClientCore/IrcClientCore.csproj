@@ -9,6 +9,8 @@
     <Authors>rymate1234</Authors>
     <Company>N/A</Company>
     <Product>IrcClientCore</Product>
+    <RepositoryUrl>https://github.com/rymate1234/IrcClientCore.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <ApplicationIcon />
     <StartupObject />
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
