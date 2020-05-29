@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,6 +15,11 @@ namespace IrcClientCore.Handlers.BuiltIn
             // handle messages to this irc client
             var destination = parsedLine.CommandMessage.Parameters[0];
             var content = parsedLine.TrailMessage.TrailingContent;
+
+            if (content == "")
+            {
+                content = parsedLine.CommandMessage.Parameters.Last();
+            }
 
             if (destination == Irc.Server.Username)
             {
