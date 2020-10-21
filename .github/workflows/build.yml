@@ -29,6 +29,3 @@ jobs:
 
     - name: Build with dotnet
       run: dotnet build --configuration Release /property:Version=1.0.$BUILD_NUMBER-dev
-
-    - name: Publish the package to GPR
-      run: dotnet nuget push ./IrcClientCore/bin/Release/*.nupkg
