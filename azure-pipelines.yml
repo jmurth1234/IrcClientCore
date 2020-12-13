@@ -12,7 +12,7 @@ variables:
   value: 'Debug'
 
 pool:
-  vmImage: 'Ubuntu-16.04'
+  vmImage: 'Ubuntu-20.04'
   
 name: $(BuildID)-$(Date:yyyyMMdd).$(Rev:r)-dev-$(SourceBranchName)
 
