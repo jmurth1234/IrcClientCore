@@ -7,25 +7,30 @@ using System.Threading.Tasks;
 
 namespace IrcClientCore
 {
-    public class IrcSocket : Irc
+    public class IrcSocket : ISocket
     {
         private TcpClient _conn;
         private Stream _stream;
         private StreamReader _clientStreamReader;
         private StreamWriter _clientStreamWriter;
+        private Irc parent;
 
-        public IrcSocket(IrcServer server) : base(server)
+        private IrcServer Server => parent.Server;
+
+        public IrcSocket(Irc parent)
         {
+            this.parent = parent;
         }
 
-        public override async void Connect()
+        public async Task Connect()
         {
+
             if (Server == null)
                 return;
 
-            IsConnecting = true;
-            IsAuthed = false;
-            ReadOrWriteFailed = false;
+            parent.IsConnecting = true;
+            parent.IsAuthed = false;
+            parent.ReadOrWriteFailed = false;
             _conn = new TcpClient {NoDelay = true};
             try
             {
@@ -55,14 +60,14 @@ namespace IrcClientCore
                 _clientStreamReader = new StreamReader(_stream);
                 _clientStreamWriter = new StreamWriter(_stream);
 
-                IsConnecting = false;
-                IsConnected = true;
-                AttemptAuth();
+                parent.IsConnecting = false;
+                parent.IsConnected = true;
+                parent.AttemptAuth();
 
                 while (true)
                 {
                     var line = await _clientStreamReader.ReadLineAsync();
-                    await RecieveLine(line);
+                    await parent.RecieveLine(line);
                 }
             }
             catch (Exception e)
@@ -77,39 +82,39 @@ namespace IrcClientCore
             return true;
         }
 
-        public override void DisconnectAsync(string msg = "Powered by WinIRC", bool attemptReconnect = false)
+        public async Task Disconnect(string msg = "Powered by WinIRC", bool attemptReconnect = false)
         {
             WriteLine("QUIT :" + msg);
-            IsConnected = false;
+            parent.IsConnected = false;
 
             if (Server.ShouldReconnect && attemptReconnect)
             {
-                IsConnecting = true;
-                ReconnectionAttempts++;
+                parent.IsConnecting = true;
+                parent.ReconnectionAttempts++;
 
-                Task.Run(async () =>
+                await Task.Run(async () =>
                 {
-                    if (ReconnectionAttempts < 3)
+                    if (parent.ReconnectionAttempts < 3)
                         await Task.Delay(1000);
                     else
                         await Task.Delay(60000);
 
-                    if (IsConnecting)
+                    if (parent.IsConnecting)
                         Connect();
                 });
             }
             else
             {
-                IsConnecting = false;
-                HandleDisconnect?.Invoke(this);
+                parent.IsConnecting = false;
+                parent.HandleDisconnect?.Invoke(parent);
             }
         }
 
-        public override void WriteLine(string str)
+        public async Task WriteLine(string str)
         {
             try
             {
-                _clientStreamWriter.WriteLine(str);
+                await _clientStreamWriter.WriteLineAsync(str);
                 _clientStreamWriter.Flush();
             }
             catch (Exception e)

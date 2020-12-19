@@ -62,7 +62,7 @@ namespace ConsoleIrcClient
                 }
             }
 
-            _socket = new IrcSocket(server);
+            _socket = new Irc(server);
             _socket.Initialise();
 
             _socket.Connect();

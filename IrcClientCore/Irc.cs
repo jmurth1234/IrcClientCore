@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace IrcClientCore
 {
-    public abstract class Irc : INotifyPropertyChanged
+    public class Irc : INotifyPropertyChanged
     {
         public string MOTD { get; internal set; }
         public IrcServer Server { get; set; }
@@ -23,6 +23,7 @@ namespace IrcClientCore
 
         public CommandManager CommandManager { get; private set; }
         protected HandlerManager HandlerManager { get; private set; }
+        public IrcSocket Connection { get; private set; }
 
         public string Buffer;
         public bool Transferred = false;
@@ -50,7 +51,7 @@ namespace IrcClientCore
         }
 
         private bool _isConnected = false;
-        protected int ReconnectionAttempts;
+        public int ReconnectionAttempts;
         private bool _isConnecting;
 
         public bool ReadOrWriteFailed { get; set; }
@@ -80,7 +81,7 @@ namespace IrcClientCore
         internal string WhoisDestination { get; set; }
         public bool DebugMode { get; protected set; }
 
-        protected Irc(IrcServer server)
+        public Irc(IrcServer server)
         {
             this.Server = server;
             IsAuthed = false;
@@ -93,47 +94,31 @@ namespace IrcClientCore
             Mentions = new ObservableCollection<Message>();
             this.CommandManager = new CommandManager(this);
             this.HandlerManager = new HandlerManager(this);
+            this.Connection = this.CreateConnection();
 
             await AddChannel("Server");
         }
 
-        protected void ConnectionChanged(bool connected)
+        private IrcSocket CreateConnection()
         {
-            if (connected && Server.ShouldReconnect)
-            {
-                foreach (var channel in ChannelList)
-                {
-                    channel.ClientMessage("Reconnecting...");
-                }
-                Connect();
-            }
-            else
-            {
-                foreach (var channel in ChannelList)
-                {
-                    channel.ClientMessage("Disconnected from IRC");
-                }
-                DisconnectAsync(attemptReconnect: true);
-            }
+            return new IrcSocket(this);
         }
 
-        public virtual async void Connect() { }
-        public virtual async void DisconnectAsync(string msg = "Powered by WinIRC", bool attemptReconnect = false) { }
-        public virtual async void SocketTransfer() { }
-        public virtual async void SocketReturn() { }
+        public async void Connect() { await Connection.Connect(); }
+        public async void DisconnectAsync(string msg = "Powered by WinIRC", bool attemptReconnect = false) { await Connection.Disconnect(msg, attemptReconnect); }
 
-        protected void AttemptAuth()
+        public async void AttemptAuth()
         {
             // Auth to the server
             Console.WriteLine("Attempting to auth");
 
-            WriteLine("CAP LS");
+            await WriteLine("CAP LS");
 
             AttemptRegister();
 
             if (Server.Password != "")
             {
-                WriteLine("PASS " + Server.Password);
+                await WriteLine("PASS " + Server.Password);
             }
 
             IsAuthed = true;
@@ -143,8 +128,8 @@ namespace IrcClientCore
         {
             try
             {
-                WriteLine($"NICK {Server.Username}");
-                WriteLine($"USER {Server.Username} 8 * :{Server.Username}");
+                await WriteLine($"NICK {Server.Username}");
+                await WriteLine($"USER {Server.Username} 8 * :{Server.Username}");
             }
             catch (Exception e)
             {
@@ -153,7 +138,7 @@ namespace IrcClientCore
             }
         }
 
-        protected async Task RecieveLine(string receivedData)
+        public async Task RecieveLine(string receivedData)
         {
             if (DebugMode) Debug.WriteLine(receivedData);
             if (receivedData == null) return;
@@ -252,13 +237,13 @@ namespace IrcClientCore
 
         public async void JoinChannel(string channel)
         {
-            AddChannel(channel);
-            WriteLine(string.Format("JOIN {0}", channel));
+            await AddChannel(channel);
+            await WriteLine(string.Format("JOIN {0}", channel));
         }
 
         public async void PartChannel(string channel)
         {
-            WriteLine(string.Format("PART {0}", channel));
+            await WriteLine (string.Format("PART {0}", channel));
             RemoveChannel(channel);
         }
 
@@ -295,7 +280,7 @@ namespace IrcClientCore
 
                 if (msg.Mention)
                 {
-                  chan.HasMentions = true;
+                    chan.HasMentions = true;
                 }
             }
 
@@ -360,16 +345,9 @@ namespace IrcClientCore
             this.AddMessage(channel, msg);
         }
 
-        public abstract void WriteLine(string str);
-
-        public static string ReplaceFirst(string text, string search, string replace)
+        public async Task WriteLine(string str)
         {
-            var pos = text.IndexOf(search);
-            if (pos < 0)
-            {
-                return text;
-            }
-            return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
+            await Connection.WriteLine(str);
         }
 
         public ObservableCollection<User> GetChannelUsers(string channel)
