@@ -10,9 +10,8 @@ using System.Threading.Tasks;
 
 namespace IrcClientCore
 {
-    public class ChannelStore
+    public class ChannelStore : BaseObject
     {
-        private bool currentlySorting;
         private string _Topic = "";
 
         public SortableObservableCollection<User> Users { get; private set; }
@@ -24,12 +23,10 @@ namespace IrcClientCore
             set
             {
                 _Topic = value;
-                TopicSetEvent?.Invoke(value);
+                NotifyPropertyChanged();
             }
         }
         public Channel Channel { get; private set; }
-
-        public event Action<string> TopicSetEvent;
 
         public ChannelStore(Channel channel)
         {
@@ -129,6 +126,7 @@ namespace IrcClientCore
 
         public void SetTopic(string topic)
         {
+            Channel.Irc.CommandManager.HandleCommand(Channel.Name, $"/topic {topic}");
             this.Topic = topic;
         }
     }

@@ -25,7 +25,7 @@ namespace IrcClientCore.Handlers.BuiltIn
             msg.User = "";
             msg.Text = string.Format("Topic for channel {0}: {1}", channel, topic);
             Irc.AddMessage(channel, msg);
-            Irc.ChannelList[channel].Store.SetTopic(topic);
+            Irc.ChannelList[channel].Store.Topic = topic;
             return true;
         }
     }

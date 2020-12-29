@@ -2,21 +2,20 @@
 
 namespace IrcClientCore.Commands
 {
-    internal class BanCommand : BaseCommand
+    internal class TopicCommand : BaseCommand
     {
         public override void RunCommand(string channel, string[] args)
         {
-            if (args.Length != 2)
+            if (args.Length < 2)
             {
-                ClientMessage(channel, "Wrong params: " + string.Join(" ", args));
+                _ = Irc.WriteLine($"TOPIC {channel}");
+
                 return;
             }
 
-            string[] modeArgs;
+            var topic = string.Join(" ", args, 1, args.Length - 1);
 
-            modeArgs = new string[] { "MODE", channel, "+b", args[1] + "!*@*" };
-
-            Irc.CommandManager.GetCommand(channel, "/mode").RunCommand(channel, modeArgs);
+            _ = Irc.WriteLine($"TOPIC {channel} :{topic}");
         }
     }
 }

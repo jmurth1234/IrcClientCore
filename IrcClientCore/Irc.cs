@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace IrcClientCore
 {
-    public class Irc : INotifyPropertyChanged
+    public class Irc : BaseObject
     {
         public string MOTD { get; internal set; }
         public IrcServer Server { get; set; }
@@ -375,12 +375,6 @@ namespace IrcClientCore
         public void AddMention(Message message)
         {
             Mentions.Add(message);
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

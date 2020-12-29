@@ -28,6 +28,7 @@ namespace IrcClientCore.Commands
             RegisterCommand("/query", new QueryCommand());
             RegisterCommand("/nick", new NickCommand());
             RegisterCommand("/msg", new MsgCommand());
+            RegisterCommand("/topic", new TopicCommand());
             RegisterCommand("/whois", new WhoisCommand());
             RegisterCommand("/list", new ListCommand());
 

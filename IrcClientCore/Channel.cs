@@ -9,7 +9,7 @@ using System.Runtime.Serialization;
 namespace IrcClientCore
 {
     [DataContract]
-    public class Channel : INotifyPropertyChanged
+    public class Channel : BaseObject
     {
         [DataMember]
         public string Server { get; set; }
@@ -23,7 +23,7 @@ namespace IrcClientCore
             set
             {
                 _hasUnread = value;
-                NotifyPropertyChanged(nameof(HasUnread));
+                NotifyPropertyChanged();
             }
         }
         [DataMember]
@@ -33,7 +33,7 @@ namespace IrcClientCore
             set
             {
                 _hasMentions = value;
-                NotifyPropertyChanged(nameof(HasMentions));
+                NotifyPropertyChanged();
             }
         }
         [DataMember]
@@ -42,7 +42,7 @@ namespace IrcClientCore
             set
             {
                 _unreadCount = value;
-                NotifyPropertyChanged(nameof(UnreadCount));
+                NotifyPropertyChanged();
             }
         }
         [DataMember]
@@ -61,7 +61,7 @@ namespace IrcClientCore
                     HasMentions = false;
                     HasUnread = false;
                 }
-                NotifyPropertyChanged(nameof(CurrentlyViewing));
+                NotifyPropertyChanged();
             }
         }
 
@@ -83,12 +83,6 @@ namespace IrcClientCore
             Buffers = irc.CreateChannelBuffer(Name);
 
             this.Irc = irc;
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public void ClientMessage(string text)
