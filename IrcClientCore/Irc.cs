@@ -23,7 +23,7 @@ namespace IrcClientCore
 
         public CommandManager CommandManager { get; private set; }
         protected HandlerManager HandlerManager { get; private set; }
-        public IrcSocket Connection { get; private set; }
+        public ISocket Connection { get; private set; }
 
         public string Buffer;
         public bool Transferred = false;
@@ -99,7 +99,7 @@ namespace IrcClientCore
             await AddChannel("Server");
         }
 
-        private IrcSocket CreateConnection()
+        public ISocket CreateConnection()
         {
             return new IrcSocket(this);
         }
