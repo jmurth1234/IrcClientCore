@@ -286,10 +286,11 @@ namespace IrcClientCore
 
             if (msg.ReplyTo != null)
             {
-                var item = chan.Buffers.FirstOrDefault(m => m.MessageId == msg.ReplyTo);
+                var item = chan.Buffers.GetMessage(msg.ReplyTo);
                 if (item != null)
                 {
                     item.Replies += 1;
+                    chan.Buffers.UpdateMessage(item);
                 }
             }
 
@@ -322,9 +323,9 @@ namespace IrcClientCore
             return ChannelList.Contains(channel);
         }
 
-        public virtual ICollection<Message> CreateChannelBuffer(string channel)
+        public virtual Buffer CreateChannelBuffer(string channel)
         {
-            return new ObservableCollection<Message>();
+            return new Buffer();
         }
 
         public void RemoveChannel(string channel)

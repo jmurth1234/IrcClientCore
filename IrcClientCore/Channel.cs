@@ -71,7 +71,7 @@ namespace IrcClientCore
         private int _unreadCount;
 
         public ChannelStore Store { get; private set; }
-        public ICollection<Message> Buffers { get; private set; }
+        public IBuffer Buffers { get; private set; }
         public Irc Irc { get; }
 
         public bool ServerLog => Name == "Server";

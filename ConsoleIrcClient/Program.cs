@@ -8,6 +8,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Security;
+using Buffer = IrcClientCore.Buffer;
 
 namespace ConsoleIrcClient
 {
@@ -117,11 +118,11 @@ namespace ConsoleIrcClient
 
             if (channel == "")
             {
-                _channelBuffers = _socket.ChannelList.ServerLog.Buffers as ObservableCollection<Message>;
+                _channelBuffers = ((Buffer) _socket.ChannelList.ServerLog.Buffers).Collection;
             }
             else
             {
-                _channelBuffers = _socket.ChannelList[_currentChannel].Buffers as ObservableCollection<Message>;
+                _channelBuffers = ((Buffer)_socket.ChannelList[_currentChannel].Buffers).Collection;
             }
 
             PrintMessages(_channelBuffers);
