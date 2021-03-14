@@ -99,7 +99,7 @@ namespace IrcClientCore
             await AddChannel("Server");
         }
 
-        public ISocket CreateConnection()
+        public virtual ISocket CreateConnection()
         {
             return new IrcSocket(this);
         }
@@ -323,7 +323,7 @@ namespace IrcClientCore
             return ChannelList.Contains(channel);
         }
 
-        public virtual Buffer CreateChannelBuffer(string channel)
+        public virtual IBuffer CreateChannelBuffer(string channel)
         {
             return new Buffer();
         }
