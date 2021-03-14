@@ -25,10 +25,11 @@ namespace IrcClientCore.Handlers.BuiltIn
             {
                 destination = parsedLine.PrefixMessage.Nickname;
             }
+
             var msg = new Message();
             msg.Channel = destination;
             msg.Type = Type;
-            msg.User = parsedLine.PrefixMessage.Nickname;
+            msg.User = parsedLine.PrefixMessage.Nickname ?? parsedLine.PrefixMessage.Prefix;
 
             if (msg.User == null)
             {

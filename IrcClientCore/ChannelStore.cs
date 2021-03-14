@@ -59,7 +59,7 @@ namespace IrcClientCore
 
         public void AddUser(string username)
         {
-            if (username.Length == 0)
+            if (username == null || username.Length == 0)
             {
                 return;
             }
