@@ -32,7 +32,19 @@ namespace IrcClientCore
 
         public string FullUsername { get; set; }
 
-        public string Nick => FullUsername.Replace("~", "").Replace("&", "").Replace("@", "").Replace("%", "").Replace("+", "");
+        public string Nick
+        {
+            get
+            {
+                var potential = FullUsername.Substring(0, 1);
+                if (PrefixMap.ContainsKey(potential))
+                {
+                    return FullUsername.Replace("~", "").Replace("&", "").Replace("@", "").Replace("%", "").Replace("+", "");
+                }
+
+                return FullUsername;
+            }
+        }
 
         public override string ToString()
         {
