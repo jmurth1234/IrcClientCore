@@ -24,6 +24,7 @@ namespace IrcClientCore
         public CommandManager CommandManager { get; private set; }
         protected HandlerManager HandlerManager { get; private set; }
         public ISocket Connection { get; private set; }
+        public IBuffer InfoBuffer { get; private set; }
 
         public string Buffer;
         public bool Transferred = false;
@@ -95,6 +96,7 @@ namespace IrcClientCore
             this.CommandManager = new CommandManager(this);
             this.HandlerManager = new HandlerManager(this);
             this.Connection = this.CreateConnection();
+            this.InfoBuffer = this.CreateChannelBuffer("info");
 
             await AddChannel("Server");
         }
@@ -235,7 +237,7 @@ namespace IrcClientCore
             return "";
         }
 
-        public async void JoinChannel(string channel)
+        public async Task JoinChannel(string channel)
         {
             await AddChannel(channel);
             await WriteLine(string.Format("JOIN {0}", channel));

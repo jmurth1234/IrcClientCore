@@ -24,7 +24,6 @@ namespace ConsoleIrcClient
         {
             new Program().Start();
         }
-        public static bool AllowPrompt { get; set; }
 
         public static bool Prompt(string prompt)
         {
@@ -45,6 +44,7 @@ namespace ConsoleIrcClient
 
             if (server == null)
             {
+                Console.WriteLine("Creating server...");
                 server = new IrcServer()
                 {
                     Name = ReadLine.Read("Server Name: "),
@@ -61,12 +61,15 @@ namespace ConsoleIrcClient
                 {
                     Serialize.SerializeObject(server, server.Name);
                 }
-            }
+            } 
+            
+            Console.WriteLine($"Connecting to {server.Hostname}");
 
             _socket = new Irc(server);
             _socket.Initialise();
 
             _socket.Connect();
+            ((Buffer)_socket.InfoBuffer).Collection.CollectionChanged += ChannelBuffersOnCollectionChanged;
 
             var handler = _socket.CommandManager;
 
@@ -88,14 +91,8 @@ namespace ConsoleIrcClient
                     ? $"[{_currentChannel} ({_socket.GetChannelUsers(_currentChannel).Count})] "
                     : "";
 
-                while (!AllowPrompt)
-                {
-                    //wait lmao
-                }
-
                 var line = ReadLine.Read($"{prefix}> "); // Get string from user
                 if (line == "") continue;
-                AllowPrompt = false;
 
                 handler.HandleCommand(_currentChannel, line);
             }
@@ -104,7 +101,6 @@ namespace ConsoleIrcClient
         private void HandleChannelList(List<ChannelListItem> list)
         {
             if (Debugger.IsAttached) Debugger.Break();
-            AllowPrompt = true;
         }
 
         internal void SwitchChannel(string channel)
@@ -142,8 +138,6 @@ namespace ConsoleIrcClient
                 var id = message.MessageId != null ? $"{{ID: {message.MessageId.Substring(0, 6)}}}" : "";
                 Console.WriteLine($"[{message.Timestamp}] {id} <{message.User}> {message.Text}");
             }
-
-            AllowPrompt = true;
         }
     }
 

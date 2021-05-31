@@ -22,8 +22,10 @@ namespace IrcClientCore.Handlers.BuiltIn
                 _currentMOTD += parsedLine.TrailMessage.TrailingContent + "\r\n";
             }
 
-            if (cmd == "376")
+            if (cmd == "376" || cmd == "422")
             {
+                _currentMOTD += parsedLine.TrailMessage.TrailingContent;
+
                 var msg = new Message
                 {
                     Text = _currentMOTD,

@@ -18,7 +18,9 @@ namespace IrcClientCore.Handlers
         private readonly string[] _topicCmds = new string[] { "TOPIC", "332" };
         private readonly string[] _namesCmds = new string[] { "353", "366" };
         private readonly string[] _listCmds = new string[] { "321", "322", "323" };
-        private readonly string[] _motdCmds = new string[] { "375", "372", "376" };
+        private readonly string[] _motdCmds = new string[] { "375", "372", "376", "422" };
+        private readonly string[] _endMotd = new string[] { "376", "422" };
+        private readonly string[] _cannotSend = new string[] { "401", "403", "404" };
 
         public HandlerManager(Irc irc)
         {
@@ -37,13 +39,14 @@ namespace IrcClientCore.Handlers
             RegisterHandler("KICK", new KickHandler());
             RegisterHandler("QUIT", new QuitHandler());
             RegisterHandler("MODE", new ModeHandler());
-            RegisterHandler("376", new ServerJoinedHandler());
             RegisterHandler("470", new ChannelForwardHandler());
             MultiRegisterHandler(_whoisCmds, new WhoisHandler());
             MultiRegisterHandler(_topicCmds, new TopicHandler());
             MultiRegisterHandler(_listCmds, new ListHandler());
             MultiRegisterHandler(_namesCmds, new NamesHandler());
             MultiRegisterHandler(_motdCmds, new MotdHandler());
+            MultiRegisterHandler(_endMotd, new ServerJoinedHandler());
+            MultiRegisterHandler(_cannotSend, new CannotSendHandler());
         }
 
         private void MultiRegisterHandler(string[] commands, BaseHandler handler, HandlerPriority priority = HandlerPriority.MEDIUM)

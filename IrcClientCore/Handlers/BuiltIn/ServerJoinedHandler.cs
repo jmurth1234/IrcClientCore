@@ -7,7 +7,7 @@ namespace IrcClientCore.Handlers.BuiltIn
 {
     class ServerJoinedHandler : BaseHandler
     {
-        public override Task<bool> HandleLine(IrcMessage parsedLine)
+        public override async Task<bool> HandleLine(IrcMessage parsedLine)
         {
             if (Irc.Server.NickservPassword != null && Irc.Server.NickservPassword != "")
             {
@@ -19,11 +19,11 @@ namespace IrcClientCore.Handlers.BuiltIn
                 var channelsList = Irc.Server.Channels.Split(',');
                 foreach (var channel in channelsList)
                 {
-                    Irc.JoinChannel(channel);
+                    await Irc.JoinChannel(channel);
                 }
             }
 
-            return Task.FromResult(true);
+            return true;
         }
     }
 }

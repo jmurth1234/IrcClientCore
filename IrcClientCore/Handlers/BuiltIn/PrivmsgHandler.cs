@@ -31,6 +31,12 @@ namespace IrcClientCore.Handlers.BuiltIn
             msg.Type = Type;
             msg.User = parsedLine.PrefixMessage.Nickname ?? parsedLine.PrefixMessage.Prefix;
 
+            if (destination.StartsWith("@#"))
+            {
+                msg.OpOnlyMessage = true;
+                msg.Channel = destination = destination.Substring(1);
+            }
+
             if (msg.User == null)
             {
                 msg.User = "";
@@ -80,6 +86,11 @@ namespace IrcClientCore.Handlers.BuiltIn
                 }
 
                 Irc.AddMessage(destination, msg);
+
+                if (Type == MessageType.Notice)
+                {
+                    Irc.InfoBuffer.Add(msg);
+                }
             }
             return true;
         }

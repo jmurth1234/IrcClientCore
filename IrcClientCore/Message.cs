@@ -71,6 +71,8 @@ namespace IrcClientCore
 
         public bool HasReplies => Replies > 0;
 
+        public bool OpOnlyMessage { get; set; }
+
         public string ReplyTo { get; set; }
 
         public string Channel { get; set; }

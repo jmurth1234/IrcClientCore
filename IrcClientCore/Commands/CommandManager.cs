@@ -79,12 +79,8 @@ namespace IrcClientCore.Commands
             else if (cmd.Count == 1)
             {
                 return _commandTable[cmd[0]];
-            }
-            else
-            {
-                channel.ClientMessage("Unknown Command: " + potentialCommand);
-                channel.ClientMessage("Type /help for a list of commands.");
-            }
+            } 
+            
             return null;
         }
 
@@ -101,7 +97,16 @@ namespace IrcClientCore.Commands
             else if (args[0].StartsWith("/"))
             {
                 var command = GetCommand(channel, args[0]);
-                command?.RunCommand(channel, args);
+
+                if (command == null)
+                {
+                    var message = string.Join(" ", args, 1, args.Length - 1);
+
+                    var cmd = args[0].Replace("/", "").ToUpper();
+                    Server.WriteLine($"{cmd} {message}");
+                    return;
+                }
+                command.RunCommand(channel, args);
             }
         }
 
