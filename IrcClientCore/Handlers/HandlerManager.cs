@@ -40,6 +40,7 @@ namespace IrcClientCore.Handlers
             RegisterHandler("QUIT", new QuitHandler());
             RegisterHandler("MODE", new ModeHandler());
             RegisterHandler("470", new ChannelForwardHandler());
+            RegisterHandler("421", new UnknownCommandHandler());
             MultiRegisterHandler(_whoisCmds, new WhoisHandler());
             MultiRegisterHandler(_topicCmds, new TopicHandler());
             MultiRegisterHandler(_listCmds, new ListHandler());
