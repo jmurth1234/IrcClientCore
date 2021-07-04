@@ -119,11 +119,18 @@ namespace IrcClientCore
 
             var userHostArray = this.Prefix.Split(new string[] { "!", "@" }, StringSplitOptions.None);
 
-            if (userHostArray.Length > 1)
+            if (userHostArray.Length == 2)
             {
                 this.IsUser = true;
                 this.Nickname = userHostArray[0];
-                this.Username= userHostArray[1];
+                this.Hostname = userHostArray[1];
+            }
+
+            if (userHostArray.Length == 3)
+            {
+                this.IsUser = true;
+                this.Nickname = userHostArray[0];
+                this.Username = userHostArray[1];
                 this.Hostname = userHostArray[2];
             }
         }

@@ -114,14 +114,14 @@ namespace IrcClientCore
             // Auth to the server
             Console.WriteLine("Attempting to auth");
 
-            await WriteLine("CAP LS");
-
-            AttemptRegister();
-
             if (Server.Password != "")
             {
                 await WriteLine("PASS " + Server.Password);
             }
+
+            await WriteLine("CAP LS");
+
+            AttemptRegister();
 
             IsAuthed = true;
         }
