@@ -45,13 +45,18 @@ namespace IrcClientCore
         {
             ClearUsers();
 
-            var users = usernames
-                .FindAll(u => !HasUser(u))
-                .Select(user => new User
-                {
-                    FullUsername = user,
-                })
-                .ToList();
+            var filtered = usernames.FindAll(u => {
+                if (u == "") return false;
+
+                return !HasUser(u);
+            });
+
+            var processed = filtered.Select(user => new User
+            {
+                FullUsername = user,
+            });
+
+            var users = processed.ToList();
 
             Users.AddRange(users);
             users.ForEach(user => RawUsers.Add(user.Nick));
@@ -80,13 +85,17 @@ namespace IrcClientCore
 
         public bool HasUser(string nick)
         {
-            nick = nick.Replace("~","").Replace("&","").Replace("@", "").Replace("%","").Replace("+", "");
-            if (nick == "") return false;
+            nick = nick.Replace("~", "").Replace("&", "").Replace("@", "").Replace("%", "").Replace("+", "");
+            if (nick == "")
+            {
+                return false;
+            }
 
             return Users.Any(user => user.Nick == nick);
         }
 
-        public void ChangeUser(string oldNick, string newNick) {
+        public void ChangeUser(string oldNick, string newNick)
+        {
             if (!HasUser(oldNick)) return;
 
             var user = Users.First(u => u.Nick == oldNick);
