@@ -21,6 +21,7 @@ namespace IrcClientCore.Handlers
         private readonly string[] _motdCmds = new string[] { "375", "372", "376", "422" };
         private readonly string[] _endMotd = new string[] { "376", "422" };
         private readonly string[] _cannotSend = new string[] { "401", "403", "404" };
+        private readonly string[] _nickErrors = new string[] { "433", "436" };
 
         public HandlerManager(Irc irc)
         {
@@ -48,6 +49,7 @@ namespace IrcClientCore.Handlers
             MultiRegisterHandler(_motdCmds, new MotdHandler());
             MultiRegisterHandler(_endMotd, new ServerJoinedHandler());
             MultiRegisterHandler(_cannotSend, new CannotSendHandler());
+            MultiRegisterHandler(_nickErrors, new NickErrorHandler());
         }
 
         private void MultiRegisterHandler(string[] commands, BaseHandler handler, HandlerPriority priority = HandlerPriority.MEDIUM)
