@@ -44,10 +44,26 @@ namespace ConsoleIrcClient
 
         private string[] GetUserCompletions(string text)
         {
+            // Get the word being completed
+            var words = text.Split(' ');
+            var currentWord = words.Last();
+            
+            // If this word isn't at the start, we shouldn't add a colon
+            bool isFirstWord = words.Length == 1 || (words.Length > 1 && string.IsNullOrWhiteSpace(words[0]));
+            
+            // Get users in the channel
             var users = _handler.Server.GetRawUsers(CurrentChannel);
-            var current = text.Split(" ").Last();
-            return users.Where(cmd => cmd.StartsWith(current)).ToArray();
+            
+            // Filter users based on the current word being typed
+            var matches = users.Where(user => user.StartsWith(currentWord, StringComparison.OrdinalIgnoreCase)).ToArray();
+            
+            // Format matches with trailing colon if this is the first word
+            if (isFirstWord)
+            {
+                return matches.Select(user => user + ": ").ToArray();
+            }
+            
+            return matches;
         }
-
     }
 }

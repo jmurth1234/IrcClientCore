@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Security;
 using Buffer = IrcClientCore.Buffer;
@@ -19,6 +20,8 @@ namespace ConsoleIrcClient
 
         private string _currentChannel;
         private AutocompleteHandler _autocompleteHandler;
+        private bool _loggingEnabled = false;
+        private string _logDirectory = "logs";
 
         public static void Main(string[] args)
         {
@@ -35,6 +38,14 @@ namespace ConsoleIrcClient
         /// </summary>
         private void Start()
         {
+            // Create logs directory if it doesn't exist
+            if (!Directory.Exists(_logDirectory))
+            {
+                Directory.CreateDirectory(_logDirectory);
+            }
+            
+            _loggingEnabled = Prompt("Enable logging to files?");
+            
             IrcServer server = null;
             if (Prompt("Load Server?"))
             {
@@ -76,6 +87,9 @@ namespace ConsoleIrcClient
             handler.RegisterCommand("/switch", new SwitchCommand(this));
             handler.RegisterCommand("/reconnect", new ReconnectCommand());
             handler.RegisterCommand("/users", new UsersCommand());
+            handler.RegisterCommand("/log", new LogCommand(this));
+            handler.RegisterCommand("/channels", new ListCommand(this));
+            handler.RegisterCommand("/commands", new CommandsHelpCommand());
 
             _autocompleteHandler = new AutocompleteHandler(handler);
 
@@ -129,6 +143,12 @@ namespace ConsoleIrcClient
         private void ChannelBuffersOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
         {
             PrintMessages(args.NewItems.OfType<Message>());
+            
+            // Log messages if logging is enabled
+            if (_loggingEnabled && args.NewItems != null)
+            {
+                LogMessages(args.NewItems.OfType<Message>().ToList(), _currentChannel);
+            }
         }
 
         private static void PrintMessages(IEnumerable<Message> messages)
@@ -136,8 +156,92 @@ namespace ConsoleIrcClient
             foreach (var message in messages)
             {
                 var id = message.MessageId != null ? $"{{ID: {message.MessageId.Substring(0, 6)}}}" : "";
-                Console.WriteLine($"[{message.Timestamp}] {id} <{message.User}> {message.Text}");
+                
+                // Save the current console color
+                var originalColor = Console.ForegroundColor;
+                
+                // Print timestamp in gray
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.Write($"[{message.Timestamp}] ");
+                
+                // Print message ID in dark cyan if exists
+                if (!string.IsNullOrEmpty(id))
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkCyan;
+                    Console.Write($"{id} ");
+                }
+                
+                // Color-code by message type
+                switch (message.Type)
+                {
+                    case MessageType.Info:
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.Write("<");
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write($"{message.User}");
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.Write("> ");
+                        break;
+                        
+                    case MessageType.Action:
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.Write($"* {message.User} ");
+                        break;
+                        
+                    case MessageType.Notice:
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("<");
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.Write($"{message.User}");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("> ");
+                        break;
+                        
+                    default:
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.Write("<");
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        Console.Write($"{message.User}");
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.Write("> ");
+                        break;
+                }
+                
+                // Print message text
+                Console.ForegroundColor = originalColor;
+                Console.WriteLine(message.Text);
             }
+        }
+
+        private void LogMessages(List<Message> messages, string channel)
+        {
+            if (string.IsNullOrEmpty(channel))
+            {
+                channel = "server";
+            }
+            
+            string logFileName = Path.Combine(_logDirectory, $"{_socket.Server.Name}_{channel.Replace("#", "")}.log");
+            
+            try
+            {
+                using (StreamWriter writer = File.AppendText(logFileName))
+                {
+                    foreach (var message in messages)
+                    {
+                        writer.WriteLine($"[{message.Timestamp}] <{message.User}> {message.Text}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error writing to log file: {ex.Message}");
+            }
+        }
+
+        public void ToggleLogging()
+        {
+            _loggingEnabled = !_loggingEnabled;
+            Console.WriteLine($"Logging is now {(_loggingEnabled ? "enabled" : "disabled")}");
         }
     }
 
@@ -182,6 +286,122 @@ namespace ConsoleIrcClient
         {
             var chan = Irc.ChannelList[channel];
             ClientMessage(channel, "List of users: " + string.Join(", ", chan.Store.Users));
+        }
+    }
+
+    internal class LogCommand : BaseCommand
+    {
+        private readonly Program _program;
+
+        public LogCommand(Program program)
+        {
+            _program = program;
+        }
+
+        public override void RunCommand(string channel, string[] args)
+        {
+            _program.ToggleLogging();
+        }
+    }
+
+    internal class ListCommand : BaseCommand
+    {
+        private readonly Program _program;
+
+        public ListCommand(Program program)
+        {
+            _program = program;
+        }
+
+        public override void RunCommand(string channel, string[] args)
+        {
+            // Get all channels from the IRC client
+            var channels = Irc.ChannelList;
+            
+            // Save original color
+            var originalColor = Console.ForegroundColor;
+            
+            Console.WriteLine("\n=== Channels ===");
+            
+            foreach (var chan in channels)
+            {
+                // Skip the server log
+                if (chan.Name == "Server") continue;
+                
+                // Display channel name in cyan
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.Write($"{chan.Name}");
+                
+                // Display user count in gray
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.Write($" ({chan.Store.Users.Count} users)");
+                
+                // Display topic in yellow if available
+                if (!string.IsNullOrEmpty(chan.Store.Topic))
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    // Truncate long topics
+                    var topic = chan.Store.Topic.Length > 50 ? chan.Store.Topic.Substring(0, 47) + "..." : chan.Store.Topic;
+                    Console.Write($" - {topic}");
+                }
+                
+                Console.WriteLine();
+            }
+            
+            Console.WriteLine("===============");
+            
+            // Restore original color
+            Console.ForegroundColor = originalColor;
+        }
+    }
+
+    internal class CommandsHelpCommand : BaseCommand
+    {
+        public override void RunCommand(string channel, string[] args)
+        {
+            // Save original color
+            var originalColor = Console.ForegroundColor;
+            
+            Console.WriteLine("\n=== Available Commands ===");
+            
+            // Display standard IRC commands
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("\nStandard IRC Commands:");
+            Console.ForegroundColor = ConsoleColor.White;
+            
+            PrintCommand("/join #channel", "Join a channel");
+            PrintCommand("/part #channel", "Leave a channel");
+            PrintCommand("/msg nick message", "Send a private message");
+            PrintCommand("/me action", "Perform an action");
+            PrintCommand("/nick newnick", "Change your nickname");
+            PrintCommand("/quit [message]", "Disconnect from the server");
+            PrintCommand("/list", "Request channel list from server");
+            
+            // Display client-specific commands
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("\nClient Commands:");
+            Console.ForegroundColor = ConsoleColor.White;
+            
+            PrintCommand("/switch [channel]", "Switch to a channel or show channel list");
+            PrintCommand("/channels", "Show formatted list of joined channels");
+            PrintCommand("/users", "Show users in current channel");
+            PrintCommand("/log", "Toggle logging to files");
+            PrintCommand("/reconnect", "Reconnect to the server");
+            PrintCommand("/commands", "Display this help message");
+            PrintCommand("/help", "Show list of available commands");
+            
+            Console.WriteLine("\n========================");
+            
+            // Restore original color
+            Console.ForegroundColor = originalColor;
+        }
+        
+        private void PrintCommand(string command, string description)
+        {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.Write($"{command}");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.WriteLine($" - {description}");
         }
     }
 }
