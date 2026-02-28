@@ -32,6 +32,10 @@ namespace IrcClientCore.Handlers
             // register the default handlers
             RegisterHandler("ING", new PingHandler());
             RegisterHandler("CAP", new CapHandler());
+            RegisterHandler("AUTHENTICATE", new AuthenticateHandler());
+            RegisterHandler("903", new AuthenticateHandler()); // SASL success
+            RegisterHandler("904", new AuthenticateHandler()); // SASL failure
+            RegisterHandler("905", new AuthenticateHandler()); // SASL failure
             RegisterHandler("NICK", new NickHandler());
             RegisterHandler("PRIVMSG", new PrivmsgHandler());
             RegisterHandler("NOTICE", new PrivmsgHandler() { Type = MessageType.Notice });
@@ -50,6 +54,24 @@ namespace IrcClientCore.Handlers
             MultiRegisterHandler(_endMotd, new ServerJoinedHandler());
             MultiRegisterHandler(_cannotSend, new CannotSendHandler());
             MultiRegisterHandler(_nickErrors, new NickErrorHandler());
+
+            // IRCv3.2 away-notify
+            MultiRegisterHandler(new string[] { "301", "305", "306", "AWAY" }, new AwayHandler());
+
+            // IRCv3.2 monitor
+            RegisterHandler("MONITOR", new MonitorHandler());
+
+            // IRCv3.2 batch
+            RegisterHandler("BATCH", new BatchHandler());
+
+            // IRCv3.2 chghost
+            RegisterHandler("CHGHOST", new ChgHostHandler());
+
+            // IRCv3.2 setname
+            RegisterHandler("SETNAME", new SetNameHandler());
+
+            // IRCv3.2 account-notify
+            RegisterHandler("ACCOUNT", new AccountNotifyHandler());
         }
 
         private void MultiRegisterHandler(string[] commands, BaseHandler handler, HandlerPriority priority = HandlerPriority.MEDIUM)
