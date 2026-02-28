@@ -161,6 +161,11 @@ namespace IrcClientCore.Handlers.BuiltIn
                 SupportsMonitor = true;
             }
 
+            if (HasCap(compatibleFeatures, "extended-monitor"))
+            {
+                requirements += "extended-monitor ";
+            }
+
             if (HasCap(compatibleFeatures, "batch"))
             {
                 requirements += "batch ";
@@ -322,6 +327,10 @@ namespace IrcClientCore.Handlers.BuiltIn
             {
                 requirements += "monitor ";
                 SupportsMonitor = true;
+            }
+            if (HasCap(newCaps, "extended-monitor"))
+            {
+                requirements += "extended-monitor ";
             }
             if (HasCap(newCaps, "userhost-in-names") && !SupportsUserHostInNames)
             {

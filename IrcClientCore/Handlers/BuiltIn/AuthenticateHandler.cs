@@ -81,6 +81,12 @@ namespace IrcClientCore.Handlers.BuiltIn
                     await Irc.WriteLine("CAP END");
                     break;
                 }
+                case "908": // Available SASL mechanisms
+                {
+                    var mechanisms = parsedLine.TrailMessage.TrailingContent;
+                    Irc.ClientMessage("Server", $"Available SASL mechanisms: {mechanisms}");
+                    break;
+                }
             }
 
             return true;

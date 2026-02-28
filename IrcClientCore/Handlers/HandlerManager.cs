@@ -38,6 +38,7 @@ namespace IrcClientCore.Handlers
             RegisterHandler("905", new AuthenticateHandler()); // SASL failure
             RegisterHandler("906", new AuthenticateHandler()); // SASL aborted
             RegisterHandler("907", new AuthenticateHandler()); // Already authenticated
+            RegisterHandler("908", new AuthenticateHandler()); // Available SASL mechanisms
             RegisterHandler("NICK", new NickHandler());
             RegisterHandler("PRIVMSG", new PrivmsgHandler());
             RegisterHandler("NOTICE", new PrivmsgHandler() { Type = MessageType.Notice });
