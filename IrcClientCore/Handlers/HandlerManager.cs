@@ -36,6 +36,8 @@ namespace IrcClientCore.Handlers
             RegisterHandler("903", new AuthenticateHandler()); // SASL success
             RegisterHandler("904", new AuthenticateHandler()); // SASL failure
             RegisterHandler("905", new AuthenticateHandler()); // SASL failure
+            RegisterHandler("906", new AuthenticateHandler()); // SASL aborted
+            RegisterHandler("907", new AuthenticateHandler()); // Already authenticated
             RegisterHandler("NICK", new NickHandler());
             RegisterHandler("PRIVMSG", new PrivmsgHandler());
             RegisterHandler("NOTICE", new PrivmsgHandler() { Type = MessageType.Notice });
@@ -59,7 +61,9 @@ namespace IrcClientCore.Handlers
             MultiRegisterHandler(new string[] { "301", "305", "306", "AWAY" }, new AwayHandler());
 
             // IRCv3.2 monitor
-            RegisterHandler("MONITOR", new MonitorHandler());
+            var monitorHandler = new MonitorHandler();
+            RegisterHandler("MONITOR", monitorHandler);
+            MultiRegisterHandler(new string[] { "730", "731", "732", "733", "734" }, new MonitorHandler());
 
             // IRCv3.2 batch
             RegisterHandler("BATCH", new BatchHandler());
@@ -72,6 +76,9 @@ namespace IrcClientCore.Handlers
 
             // IRCv3.2 account-notify
             RegisterHandler("ACCOUNT", new AccountNotifyHandler());
+
+            // IRCv3 TAGMSG (typing indicators, reactions)
+            RegisterHandler("TAGMSG", new TagMsgHandler());
         }
 
         private void MultiRegisterHandler(string[] commands, BaseHandler handler, HandlerPriority priority = HandlerPriority.MEDIUM)
@@ -111,6 +118,11 @@ namespace IrcClientCore.Handlers
             return Handlers
                     .Where(handler => handler.Commands.Contains(command))
                     .OrderByDescending(handler => (int)handler.Priority).ToList().Count > 0;
+        }
+
+        public T GetHandler<T>() where T : BaseHandler
+        {
+            return Handlers.OfType<T>().FirstOrDefault();
         }
 
     }

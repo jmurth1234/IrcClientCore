@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace IrcClientCore.Handlers.BuiltIn
@@ -18,15 +19,20 @@ namespace IrcClientCore.Handlers.BuiltIn
                 return true;
             }
 
-            // Format: :nick!user@host SETNAME :new real name
             var nick = parsedLine.PrefixMessage.Nickname;
             var newRealName = parsedLine.TrailMessage.TrailingContent;
 
-            // Notify all channels
+            // Update user objects and notify all channels
             foreach (var channel in Irc.ChannelList)
             {
                 if (channel.Store.HasUser(nick))
                 {
+                    var user = channel.Store.Users.FirstOrDefault(u => u.Nick == nick);
+                    if (user != null)
+                    {
+                        user.RealName = newRealName;
+                    }
+
                     var msg = new Message
                     {
                         Type = MessageType.Info,

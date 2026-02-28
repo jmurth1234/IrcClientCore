@@ -22,7 +22,7 @@ namespace IrcClientCore
         public ChannelsGroup ChannelList { get; set; }
 
         public CommandManager CommandManager { get; private set; }
-        protected HandlerManager HandlerManager { get; private set; }
+        public HandlerManager HandlerManager { get; private set; }
         public ISocket Connection { get; private set; }
         public IBuffer InfoBuffer { get; private set; }
 
@@ -119,7 +119,7 @@ namespace IrcClientCore
                 await WriteLine("PASS " + Server.Password);
             }
 
-            await WriteLine("CAP LS");
+            await WriteLine("CAP LS 302");
 
             AttemptRegister();
 
@@ -226,7 +226,7 @@ namespace IrcClientCore
             if (!SupportsMessageTags)
                 AddMessage(channel, msg);
 
-            WriteLine(string.Format("+draft/reply={0} PRIVMSG {1} :{2}", reply, channel, message));
+            WriteLine(string.Format("@+draft/reply={0} PRIVMSG {1} :{2}", reply, channel, message));
         }
 
         public string GetChannelTopic(string channel)

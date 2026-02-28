@@ -15,7 +15,8 @@ namespace IrcClientCore.Handlers.BuiltIn
             // Check for extended-join (IRCv3.2)
             // Format: :nick!user@host JOIN #channel account :realname
             // The account is in parameters[1] and realname in trailing
-            if (CapHandler.SupportsExtendedJoin && parsedLine.CommandMessage.Parameters != null && parsedLine.CommandMessage.Parameters.Count >= 2)
+            var capHandler = Irc.HandlerManager.GetHandler<CapHandler>();
+            if (capHandler != null && capHandler.SupportsExtendedJoin && parsedLine.CommandMessage.Parameters != null && parsedLine.CommandMessage.Parameters.Count >= 2)
             {
                 // Extended join format: JOIN #channel account :realname
                 channel = parsedLine.CommandMessage.Parameters[0];

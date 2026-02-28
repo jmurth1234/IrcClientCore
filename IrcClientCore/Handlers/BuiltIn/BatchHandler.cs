@@ -42,14 +42,17 @@ namespace IrcClientCore.Handlers.BuiltIn
 
         private Task<bool> HandleBatch(IrcMessage parsedLine)
         {
-            var param = parsedLine.TrailMessage.TrailingContent;
+            var parameters = parsedLine.CommandMessage.Parameters;
+            if (parameters == null || parameters.Count == 0)
+                return Task.FromResult(true);
 
-            if (param.StartsWith("+"))
+            var refParam = parameters[0]; // +reference or -reference
+
+            if (refParam.StartsWith("+"))
             {
-                // Batch start: +batchref type [params]
-                var parts = param.Substring(1).Split(' ');
-                var batchRef = parts[0];
-                var type = parts.Length > 1 ? parts[1] : "";
+                // Batch start: BATCH +reference type [params]
+                var batchRef = refParam.Substring(1);
+                var type = parameters.Count > 1 ? parameters[1] : "";
 
                 var batchInfo = new BatchInfo
                 {
@@ -63,10 +66,10 @@ namespace IrcClientCore.Handlers.BuiltIn
 
                 Irc.ClientMessage("Server", $"[Batch start: {type}]");
             }
-            else if (param.StartsWith("-"))
+            else if (refParam.StartsWith("-"))
             {
-                // Batch end: -batchref
-                var batchRef = param.Substring(1).Trim();
+                // Batch end: BATCH -reference
+                var batchRef = refParam.Substring(1);
                 if (_activeBatches.TryGetValue(batchRef, out var batchInfo))
                 {
                     OnBatchEnd?.Invoke(batchRef);

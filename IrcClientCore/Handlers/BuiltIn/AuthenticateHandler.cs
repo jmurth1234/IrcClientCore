@@ -10,51 +10,96 @@ namespace IrcClientCore.Handlers.BuiltIn
     /// </summary>
     class AuthenticateHandler : BaseHandler
     {
+        private const int ChunkSize = 400;
+
         public override async Task<bool> HandleLine(IrcMessage parsedLine)
         {
-            // Handle AUTHENTICATE command from server
-            if (parsedLine.CommandMessage.Command == "AUTHENTICATE")
-            {
-                var data = parsedLine.TrailMessage.TrailingContent;
+            var command = parsedLine.CommandMessage.Command;
 
-                if (CapHandler.IsAuthenticatingWithSASL)
+            // Handle AUTHENTICATE command from server
+            if (command == "AUTHENTICATE")
+            {
+                var capHandler = Irc.HandlerManager.GetHandler<CapHandler>();
+                if (capHandler != null && capHandler.IsAuthenticatingWithSASL)
                 {
                     // Check if server is ready for our response (+ means ready)
+                    // The "+" may be in parameters or trail depending on server
+                    var data = parsedLine.CommandMessage.Parameters?.Count > 0
+                        ? parsedLine.CommandMessage.Parameters[0]
+                        : parsedLine.TrailMessage.TrailingContent;
+
                     if (!string.IsNullOrEmpty(data) && data.Equals("+"))
                     {
                         // Server is ready for our response
-                        // Send SASL PLAIN: base64(\0username\0password)
                         var saslPlain = BuildSaslPlain();
-                        await Irc.WriteLine($"AUTHENTICATE :{saslPlain}");
-                    }
-                    else
-                    {
-                        // Authentication successful or failed
-                        CapHandler.IsAuthenticatingWithSASL = false;
-
-                        // Send CAP END to finish CAP negotiation
-                        await Irc.WriteLine("CAP END");
+                        await SendAuthenticateChunked(saslPlain);
                     }
                 }
 
-                // Let other handlers process this as well (return true but don't block)
                 return true;
             }
 
-            // Handle 903 (SASL success) and 904/905 (SASL failure) numerics
-            if (parsedLine.CommandMessage.Command == "903")
+            // Handle SASL numerics
+            switch (command)
             {
-                CapHandler.IsAuthenticatingWithSASL = false;
-                await Irc.WriteLine("CAP END");
-            }
-            else if (parsedLine.CommandMessage.Command == "904" || parsedLine.CommandMessage.Command == "905")
-            {
-                // SASL authentication failed
-                CapHandler.IsAuthenticatingWithSASL = false;
-                await Irc.WriteLine("CAP END");
+                case "903": // SASL success
+                {
+                    var capHandler = Irc.HandlerManager.GetHandler<CapHandler>();
+                    if (capHandler != null)
+                    {
+                        capHandler.IsAuthenticatingWithSASL = false;
+                    }
+                    await Irc.WriteLine("CAP END");
+                    break;
+                }
+                case "904": // SASL failure (invalid credentials)
+                case "905": // SASL failure (too long)
+                {
+                    var capHandler = Irc.HandlerManager.GetHandler<CapHandler>();
+                    if (capHandler != null)
+                    {
+                        capHandler.IsAuthenticatingWithSASL = false;
+                    }
+                    Irc.ClientMessage("Server", "SASL authentication failed");
+                    await Irc.WriteLine("CAP END");
+                    break;
+                }
+                case "906": // SASL aborted
+                {
+                    var capHandler = Irc.HandlerManager.GetHandler<CapHandler>();
+                    if (capHandler != null)
+                    {
+                        capHandler.IsAuthenticatingWithSASL = false;
+                    }
+                    Irc.ClientMessage("Server", "SASL authentication aborted");
+                    await Irc.WriteLine("CAP END");
+                    break;
+                }
+                case "907": // Already authenticated
+                {
+                    Irc.ClientMessage("Server", "Already authenticated via SASL");
+                    await Irc.WriteLine("CAP END");
+                    break;
+                }
             }
 
             return true;
+        }
+
+        private async Task SendAuthenticateChunked(string payload)
+        {
+            // Split into 400-byte chunks
+            for (int i = 0; i < payload.Length; i += ChunkSize)
+            {
+                var chunk = payload.Substring(i, Math.Min(ChunkSize, payload.Length - i));
+                await Irc.WriteLine($"AUTHENTICATE {chunk}");
+            }
+
+            // If the last chunk was exactly 400 bytes, send AUTHENTICATE + to signal end
+            if (payload.Length > 0 && payload.Length % ChunkSize == 0)
+            {
+                await Irc.WriteLine("AUTHENTICATE +");
+            }
         }
 
         private string BuildSaslPlain()
@@ -65,7 +110,6 @@ namespace IrcClientCore.Handlers.BuiltIn
 
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
-                // If no username/password, use empty auth
                 username = "";
                 password = "";
             }

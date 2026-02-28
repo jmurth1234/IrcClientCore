@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,9 +19,9 @@ namespace IrcClientCore.Handlers.BuiltIn
                 var list = parsedLine.TrailMessage.TrailingContent.Split(' ').ToList();
 
                 // Handle userhost-in-names (IRCv3.3)
-                // Format: #channel :nick1=+~user@host.com @nick2=user2@host2.com
-                // or with account: nick1!~user@host.com (accountname)
-                if (CapHandler.SupportsUserHostInNames)
+                // Format: [@+]nick!user@host
+                var capHandler = Irc.HandlerManager.GetHandler<CapHandler>();
+                if (capHandler != null && capHandler.SupportsUserHostInNames)
                 {
                     list = ParseUserHostNames(list);
                 }
@@ -53,7 +53,7 @@ namespace IrcClientCore.Handlers.BuiltIn
 
         /// <summary>
         /// Parse userhost-in-names format into nicknames
-        /// Format: nick1=+~user@host.com or @nick2=user2@host2.com
+        /// Format: [@+]nick!user@host
         /// </summary>
         private List<string> ParseUserHostNames(List<string> names)
         {
@@ -64,28 +64,28 @@ namespace IrcClientCore.Handlers.BuiltIn
                 if (string.IsNullOrWhiteSpace(name))
                     continue;
 
-                // Format: nick=+~user@host.com or @nick=user@host.com
-                // We need to extract just the nick for the user list
+                // Format: [@+%~&]nick!user@host
+                // Strip prefix chars, then split on ! to get nick
+                string entry = name;
 
-                string nick = name;
+                // Get and strip all leading prefix characters
+                var prefix = GetPrefix(entry);
+                string withoutPrefix = entry.Substring(prefix.Length);
 
-                // Remove prefix characters (~&@%+) from the beginning
-                nick = RemovePrefix(nick);
-
-                // If there's a = or @ after the nick, extract just the nick part
-                if (nick.Contains("="))
+                // Split on ! to separate nick from user@host
+                string nick;
+                int bangIndex = withoutPrefix.IndexOf('!');
+                if (bangIndex >= 0)
                 {
-                    nick = nick.Split('=')[0];
+                    nick = withoutPrefix.Substring(0, bangIndex);
                 }
-                else if (nick.Contains("@"))
+                else
                 {
-                    nick = nick.Split('@')[0];
+                    nick = withoutPrefix;
                 }
 
                 if (!string.IsNullOrEmpty(nick))
                 {
-                    // Re-add prefix if it was stripped
-                    var prefix = GetPrefix(name);
                     result.Add(prefix + nick);
                 }
             }
@@ -98,26 +98,24 @@ namespace IrcClientCore.Handlers.BuiltIn
             if (string.IsNullOrEmpty(name))
                 return "";
 
-            var firstChar = name[0].ToString();
-            var prefixChars = new string[] { "~", "&", "@", "%", "+" };
-            if (prefixChars.Contains(firstChar))
+            var prefixChars = new HashSet<char> { '~', '&', '@', '%', '+' };
+            int i = 0;
+            while (i < name.Length && prefixChars.Contains(name[i]))
             {
-                return firstChar;
+                i++;
             }
-            return "";
+            return name.Substring(0, i);
         }
 
         private string RemovePrefix(string nick)
         {
-            var prefixChars = new char[] { '~', '&', '@', '%', '+' };
-            foreach (var c in prefixChars)
+            var prefixChars = new HashSet<char> { '~', '&', '@', '%', '+' };
+            int i = 0;
+            while (i < nick.Length && prefixChars.Contains(nick[i]))
             {
-                if (nick.StartsWith(c.ToString()))
-                {
-                    return nick.Substring(1);
-                }
+                i++;
             }
-            return nick;
+            return nick.Substring(i);
         }
     }
 }

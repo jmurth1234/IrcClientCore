@@ -1,11 +1,12 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace IrcClientCore.Handlers.BuiltIn
 {
     /// <summary>
     /// Handles CHGHOST (hostname change) notifications (IRCv3.2)
-    /// Format: :nick!user@oldhost CHGHOST newhost
+    /// Format: :nick!user@oldhost CHGHOST newuser newhost
     /// </summary>
     class ChgHostHandler : BaseHandler
     {
@@ -18,12 +19,15 @@ namespace IrcClientCore.Handlers.BuiltIn
                 return true;
             }
 
-            // Format: :nick!user@oldhost CHGHOST newhost
+            // Format: :nick!user@oldhost CHGHOST newuser newhost
             var nick = parsedLine.PrefixMessage.Nickname;
-            var newHost = parsedLine.TrailMessage.TrailingContent;
             var oldHost = parsedLine.PrefixMessage.Hostname;
+            var parameters = parsedLine.CommandMessage.Parameters;
 
-            // Notify all channels
+            string newUser = parameters?.Count > 0 ? parameters[0] : null;
+            string newHost = parameters?.Count > 1 ? parameters[1] : parsedLine.TrailMessage.TrailingContent;
+
+            // Notify all channels and update user objects
             foreach (var channel in Irc.ChannelList)
             {
                 if (channel.Store.HasUser(nick))
@@ -32,7 +36,7 @@ namespace IrcClientCore.Handlers.BuiltIn
                     {
                         Type = MessageType.Info,
                         User = nick,
-                        Text = $"Hostname changed from {oldHost} to {newHost}"
+                        Text = $"Changed host: {newUser}@{newHost}"
                     };
                     Irc.AddMessage(channel.Name, msg);
                 }

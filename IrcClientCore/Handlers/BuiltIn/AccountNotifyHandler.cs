@@ -1,14 +1,11 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace IrcClientCore.Handlers.BuiltIn
 {
     /// <summary>
     /// Handles account-notify (IRCv3.2)
-    /// Notifies when users change their account (identified services account)
-    ///
-    /// This is typically handled through metadata on JOIN/PART/NICK,
-    /// but some servers also send ACCOUNT command explicitly
     /// Format: :nick!user@host ACCOUNT :accountname
     /// </summary>
     class AccountNotifyHandler : BaseHandler
@@ -19,7 +16,6 @@ namespace IrcClientCore.Handlers.BuiltIn
         {
             var command = parsedLine.CommandMessage.Command;
 
-            // Handle explicit ACCOUNT command (some servers send this)
             if (command == "ACCOUNT")
             {
                 return await HandleAccountCommand(parsedLine);
@@ -36,43 +32,45 @@ namespace IrcClientCore.Handlers.BuiltIn
 
         private Task<bool> HandleAccountCommand(IrcMessage parsedLine)
         {
-            // Format: :nick!user@host ACCOUNT :accountname
-            // Or: :nick!user@host ACCOUNT :* (logged out)
             var nick = parsedLine.PrefixMessage.Nickname;
             var account = parsedLine.TrailMessage.TrailingContent;
 
+            string accountValue;
             if (account == "*")
             {
-                // User logged out / is no longer identified
+                accountValue = null;
                 Irc.ClientMessage("Server", $"{nick} is no longer identified to an account");
-                OnAccountChanged?.Invoke(nick, null);
             }
             else
             {
-                // User is identified to account
+                accountValue = account;
                 Irc.ClientMessage("Server", $"{nick} is identified to account: {account}");
-                OnAccountChanged?.Invoke(nick, account);
             }
 
+            // Update user objects across all channels
+            foreach (var channel in Irc.ChannelList)
+            {
+                if (channel.Store.HasUser(nick))
+                {
+                    var user = channel.Store.Users.FirstOrDefault(u => u.Nick == nick);
+                    if (user != null)
+                    {
+                        user.Account = accountValue;
+                    }
+                }
+            }
+
+            OnAccountChanged?.Invoke(nick, accountValue);
             return Task.FromResult(true);
         }
 
         private Task<bool> HandleAccountMetadata(IrcMessage parsedLine, string account)
         {
-            // This is handled in the individual handlers (JoinHandler, PartHandler, NickHandler)
-            // but we can also handle any standalone account notifications here
-
             var nick = parsedLine.PrefixMessage?.Nickname;
             if (!string.IsNullOrEmpty(nick))
             {
-                if (account == "*")
-                {
-                    OnAccountChanged?.Invoke(nick, null);
-                }
-                else
-                {
-                    OnAccountChanged?.Invoke(nick, account);
-                }
+                var accountValue = account == "*" ? null : account;
+                OnAccountChanged?.Invoke(nick, accountValue);
             }
 
             return Task.FromResult(true);
