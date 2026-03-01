@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  build-test-pack:
+    runs-on: ubuntu-latest
+    env:
+      BUILD_CONFIGURATION: Debug
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 5.0.x
+
+      - name: Restore
+        run: dotnet restore IrcClientCore.sln
+
+      - name: Build
+        run: dotnet build IrcClientCore.sln --configuration $BUILD_CONFIGURATION --no-restore /p:Version=1.0.${{ github.run_number }}
+
+      - name: Test
+        run: dotnet test IrcClientCore.Tests/IrcClientCore.Tests.csproj --configuration $BUILD_CONFIGURATION --no-build --logger "trx;LogFileName=test-results.trx" --results-directory "${{ runner.temp }}"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ${{ runner.temp }}/*.trx
+          if-no-files-found: warn
+
+      - name: Publish test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: .NET Test Results
+          path: ${{ runner.temp }}/*.trx
+          reporter: dotnet-trx
+          fail-on-error: true
+
+      - name: Publish NuGet package
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push ./IrcClientCore/bin/Debug/*.nupkg \
+            --api-key "$NUGET_API_KEY" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
