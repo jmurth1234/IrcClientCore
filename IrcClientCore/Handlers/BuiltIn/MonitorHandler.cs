@@ -1,5 +1,4 @@
 using System;
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace IrcClientCore.Handlers.BuiltIn
@@ -19,17 +18,6 @@ namespace IrcClientCore.Handlers.BuiltIn
         // Event for user online/offline status changes
         public static event Action<string> OnUserOnline;
         public static event Action<string> OnUserOffline;
-
-        // Monitor numerics
-        private static readonly string[] _monitorCmds = new string[] { "730", "731", "732", "733", "734", "735", "736" };
-
-        public MonitorHandler()
-        {
-            foreach (var cmd in _monitorCmds)
-            {
-                Commands.Add(cmd);
-            }
-        }
 
         public override async Task<bool> HandleLine(IrcMessage parsedLine)
         {
@@ -61,7 +49,7 @@ namespace IrcClientCore.Handlers.BuiltIn
             // Format: :server 730 target :nick1!user1@host1,nick2!user2@host2,...
             // Or: :server 730 target :nick (simple format)
             var params_ = parsedLine.CommandMessage.Parameters;
-            if (params_.Count < 2)
+            if (params_ == null || params_.Count < 1)
             {
                 return Task.FromResult(true);
             }
@@ -86,7 +74,7 @@ namespace IrcClientCore.Handlers.BuiltIn
         {
             // Format: :server 731 target :nick1,nick2,...
             var params_ = parsedLine.CommandMessage.Parameters;
-            if (params_.Count < 2)
+            if (params_ == null || params_.Count < 1)
             {
                 return Task.FromResult(true);
             }

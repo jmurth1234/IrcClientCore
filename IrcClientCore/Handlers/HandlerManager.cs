@@ -62,12 +62,11 @@ namespace IrcClientCore.Handlers
             MultiRegisterHandler(new string[] { "301", "305", "306", "AWAY" }, new AwayHandler());
 
             // IRCv3.2 monitor
-            var monitorHandler = new MonitorHandler();
-            RegisterHandler("MONITOR", monitorHandler);
-            MultiRegisterHandler(new string[] { "730", "731", "732", "733", "734" }, new MonitorHandler());
+            MultiRegisterHandler(new string[] { "MONITOR", "730", "731", "732", "733", "734", "735", "736" }, new MonitorHandler());
 
             // IRCv3.2 batch
-            RegisterHandler("BATCH", new BatchHandler());
+            // Also run this handler for all commands so @batch-tagged messages are captured.
+            MultiRegisterHandler(new string[] { "BATCH", "*" }, new BatchHandler());
 
             // IRCv3.2 chghost
             RegisterHandler("CHGHOST", new ChgHostHandler());
@@ -75,8 +74,8 @@ namespace IrcClientCore.Handlers
             // IRCv3.2 setname
             RegisterHandler("SETNAME", new SetNameHandler());
 
-            // IRCv3.2 account-notify
-            RegisterHandler("ACCOUNT", new AccountNotifyHandler());
+            // IRCv3.2 account-notify (+ account-tag on JOIN/PART/NICK)
+            MultiRegisterHandler(new string[] { "ACCOUNT", "JOIN", "PART", "NICK" }, new AccountNotifyHandler());
 
             // IRCv3 TAGMSG (typing indicators, reactions)
             RegisterHandler("TAGMSG", new TagMsgHandler());
@@ -103,11 +102,22 @@ namespace IrcClientCore.Handlers
 
         internal List<BaseHandler> GetHandlers(string potentialCommand)
         {
-            var handlers = Handlers.Where(handler => handler.Commands.Contains(potentialCommand))
-                                   .OrderByDescending(handler => (int) handler.Priority).ToList();
+            var commandHandlers = Handlers.Where(handler => handler.Commands.Contains(potentialCommand)).ToList();
+            var globalHandlers = Handlers.Where(handler => handler.Commands.Contains("*")).ToList();
+
+            var handlers = commandHandlers
+                .Concat(globalHandlers)
+                .Distinct()
+                .OrderByDescending(handler => (int)handler.Priority)
+                .ToList();
 
             if (handlers.Count >= 1)
             {
+                // Keep default handling for commands without explicit handlers.
+                if (commandHandlers.Count == 0)
+                {
+                    handlers.Add(DefaultHandler);
+                }
                 return handlers;
             }
 

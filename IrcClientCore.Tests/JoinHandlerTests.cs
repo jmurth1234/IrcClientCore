@@ -42,10 +42,27 @@ namespace IrcClientCore.Tests
         }
 
         [Fact]
+        public async Task Join_SelfJoin_ParameterForm_AddsChannelToList()
+        {
+            await _irc.SimulateReceive(":testuser!user@host JOIN #channel2");
+            Assert.True(_irc.ChannelList.Contains("#channel2"));
+        }
+
+        [Fact]
         public async Task Join_OtherUserJoin_AddsUserToChannelStore()
         {
             await _irc.AddChannel("#channel");
             await _irc.SimulateReceive(":othernick!user@host JOIN :#channel");
+
+            var users = _irc.GetChannelUsers("#channel");
+            Assert.Contains(users, u => u.Nick == "othernick");
+        }
+
+        [Fact]
+        public async Task Join_OtherUserJoin_ParameterForm_AddsUserToChannelStore()
+        {
+            await _irc.AddChannel("#channel");
+            await _irc.SimulateReceive(":othernick!user@host JOIN #channel");
 
             var users = _irc.GetChannelUsers("#channel");
             Assert.Contains(users, u => u.Nick == "othernick");

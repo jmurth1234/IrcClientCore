@@ -101,6 +101,18 @@ namespace IrcClientCore.Tests
         }
 
         [Fact]
+        public async Task CapLs_Sasl_WithoutPassword_DoesNotRequestSasl()
+        {
+            _irc.Server.Password = "";
+            _irc.MockSocket.SentLines.Clear();
+
+            await _irc.SimulateReceive(":server CAP * LS :sasl server-time");
+
+            Assert.DoesNotContain(_irc.MockSocket.SentLines,
+                l => l.StartsWith("CAP REQ") && l.Contains("sasl"));
+        }
+
+        [Fact]
         public async Task CapLs_NoSasl_SendsCapEnd()
         {
             _irc.MockSocket.SentLines.Clear();
@@ -251,6 +263,18 @@ namespace IrcClientCore.Tests
         {
             await _irc.SimulateReceive(":server CAP * ACK :sasl");
             Assert.True(_capHandler.IsAuthenticatingWithSASL);
+        }
+
+        [Fact]
+        public async Task CapAck_Sasl_WithoutPassword_DoesNotStartAuthentication()
+        {
+            _irc.Server.Password = "";
+            _irc.MockSocket.SentLines.Clear();
+
+            await _irc.SimulateReceive(":server CAP * ACK :sasl");
+
+            Assert.DoesNotContain("AUTHENTICATE PLAIN", _irc.MockSocket.SentLines);
+            Assert.False(_capHandler.IsAuthenticatingWithSASL);
         }
 
         // ── CAP NAK ───────────────────────────────────────────────────────────────

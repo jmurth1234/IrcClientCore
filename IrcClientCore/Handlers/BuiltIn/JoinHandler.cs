@@ -8,7 +8,7 @@ namespace IrcClientCore.Handlers.BuiltIn
     {
         public override async Task<bool> HandleLine(IrcMessage parsedLine)
         {
-            string channel;
+            string channel = null;
             string account = null;
             string realName = null;
 
@@ -25,8 +25,15 @@ namespace IrcClientCore.Handlers.BuiltIn
             }
             else
             {
-                // Standard join format: JOIN #channel
-                channel = parsedLine.TrailMessage.TrailingContent;
+                // Standard join can be either JOIN #channel or JOIN :#channel
+                if (parsedLine.CommandMessage.Parameters != null && parsedLine.CommandMessage.Parameters.Count > 0)
+                {
+                    channel = parsedLine.CommandMessage.Parameters[0];
+                }
+                else
+                {
+                    channel = parsedLine.TrailMessage.TrailingContent;
+                }
             }
 
             // Also check for account in metadata (account-notify)
@@ -44,11 +51,6 @@ namespace IrcClientCore.Handlers.BuiltIn
             if (parsedLine.PrefixMessage.Nickname == Irc.Server.Username)
             {
                 await Irc.AddChannel(channel);
-            }
-
-            if (parsedLine.CommandMessage.Parameters != null && string.IsNullOrEmpty(channel))
-            {
-                channel = parsedLine.CommandMessage.Parameters[0];
             }
 
             // Build user info string

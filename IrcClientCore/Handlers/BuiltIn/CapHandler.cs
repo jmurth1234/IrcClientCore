@@ -145,8 +145,12 @@ namespace IrcClientCore.Handlers.BuiltIn
             // IRCv3.2 capabilities
             if (HasCap(compatibleFeatures, "sasl"))
             {
-                requirements += "sasl ";
+                // Only request SASL if credentials are configured.
                 SupportsSASL = true;
+                if (!string.IsNullOrEmpty(Irc.Server.Password))
+                {
+                    requirements += "sasl ";
+                }
             }
 
             if (HasCap(compatibleFeatures, "away-notify"))
@@ -245,6 +249,12 @@ namespace IrcClientCore.Handlers.BuiltIn
 
             if (HasCap(caps, "sasl"))
             {
+                if (string.IsNullOrEmpty(Irc.Server.Password))
+                {
+                    await EndCapNegotiation();
+                    return true;
+                }
+
                 // Start SASL authentication
                 IsAuthenticatingWithSASL = true;
                 _saslRequested = true;

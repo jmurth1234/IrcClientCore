@@ -166,6 +166,31 @@ namespace IrcClientCore.Tests
             }
         }
 
+        [Fact]
+        public async Task AccountTag_OnJoin_FiresOnAccountChangedEvent()
+        {
+            string? capturedNick = null;
+            string? capturedAccount = null;
+
+            Action<string, string?> handler = (nick, acct) =>
+            {
+                capturedNick = nick;
+                capturedAccount = acct;
+            };
+            AccountNotifyHandler.OnAccountChanged += handler;
+
+            try
+            {
+                await _irc.SimulateReceive("@account=joinedacct :othernick!user@host JOIN :#channel");
+                Assert.Equal("othernick", capturedNick);
+                Assert.Equal("joinedacct", capturedAccount);
+            }
+            finally
+            {
+                AccountNotifyHandler.OnAccountChanged -= handler;
+            }
+        }
+
         // ── SETNAME (IRCv3.2) ─────────────────────────────────────────────────────
 
         [Fact]
@@ -314,6 +339,33 @@ namespace IrcClientCore.Tests
             Assert.Contains(buf.Messages, m => m.Text == "batched message");
         }
 
+        [Fact]
+        public async Task Batch_MessageWithBatchTag_FiresOnBatchMessageEvent()
+        {
+            string? capturedRef = null;
+            IrcMessage? capturedMessage = null;
+            Action<string, IrcMessage> handler = (batchRef, msg) =>
+            {
+                capturedRef = batchRef;
+                capturedMessage = msg;
+            };
+            BatchHandler.OnBatchMessage += handler;
+
+            try
+            {
+                await _irc.SimulateReceive(":server BATCH +batchref labeled-response");
+                await _irc.SimulateReceive("@batch=batchref :nick!user@host PRIVMSG #channel :batched payload");
+
+                Assert.Equal("batchref", capturedRef);
+                Assert.NotNull(capturedMessage);
+                Assert.Equal("PRIVMSG", capturedMessage!.CommandMessage.Command);
+            }
+            finally
+            {
+                BatchHandler.OnBatchMessage -= handler;
+            }
+        }
+
         // ── MONITOR (IRCv3.2) ─────────────────────────────────────────────────────
 
         [Fact]
@@ -325,8 +377,7 @@ namespace IrcClientCore.Tests
 
             try
             {
-                // Handler requires params_.Count >= 2; use "testuser *" to satisfy that
-                await _irc.SimulateReceive(":server 730 testuser * :watcheduser!user@host");
+                await _irc.SimulateReceive(":server 730 testuser :watcheduser!user@host");
                 Assert.Equal("watcheduser", capturedNick);
             }
             finally
@@ -344,12 +395,11 @@ namespace IrcClientCore.Tests
 
             try
             {
-                await _irc.SimulateReceive(":server 730 testuser * :alpha!a@host,beta!b@host,gamma!c@host");
-                // HandlerManager registers two MonitorHandler instances (one for "MONITOR" command,
-                // one for numeric 730-734), so the event fires twice per nick — verify all are present.
+                await _irc.SimulateReceive(":server 730 testuser :alpha!a@host,beta!b@host,gamma!c@host");
                 Assert.Contains("alpha", onlineNicks);
                 Assert.Contains("beta", onlineNicks);
                 Assert.Contains("gamma", onlineNicks);
+                Assert.Equal(3, onlineNicks.Count);
             }
             finally
             {
@@ -366,7 +416,7 @@ namespace IrcClientCore.Tests
 
             try
             {
-                await _irc.SimulateReceive(":server 731 testuser * :watcheduser");
+                await _irc.SimulateReceive(":server 731 testuser :watcheduser");
                 Assert.Equal("watcheduser", capturedNick);
             }
             finally
