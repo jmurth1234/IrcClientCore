@@ -90,6 +90,11 @@ namespace ConsoleIrcClient
             handler.RegisterCommand("/log", new LogCommand(this));
             handler.RegisterCommand("/channels", new ListCommand(this));
             handler.RegisterCommand("/commands", new CommandsHelpCommand());
+            handler.RegisterCommand("/away", new AwayCommand());
+            handler.RegisterCommand("/back", new BackCommand());
+            handler.RegisterCommand("/reply", new ReplyCommand());
+            handler.RegisterCommand("/mentions", new MentionsCommand());
+            handler.RegisterCommand("/motd", new MotdCommand());
 
             _autocompleteHandler = new AutocompleteHandler(handler);
 
@@ -156,21 +161,28 @@ namespace ConsoleIrcClient
             foreach (var message in messages)
             {
                 var id = message.MessageId != null ? $"{{ID: {message.MessageId.Substring(0, 6)}}}" : "";
-                
+
                 // Save the current console color
                 var originalColor = Console.ForegroundColor;
-                
+
                 // Print timestamp in gray
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.Write($"[{message.Timestamp}] ");
-                
+
                 // Print message ID in dark cyan if exists
                 if (!string.IsNullOrEmpty(id))
                 {
                     Console.ForegroundColor = ConsoleColor.DarkCyan;
                     Console.Write($"{id} ");
                 }
-                
+
+                // Show reply indicator
+                if (!string.IsNullOrEmpty(message.ReplyTo))
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                    Console.Write($"[reply:{message.ReplyTo.Substring(0, Math.Min(6, message.ReplyTo.Length))}] ");
+                }
+
                 // Color-code by message type
                 switch (message.Type)
                 {
@@ -182,12 +194,12 @@ namespace ConsoleIrcClient
                         Console.ForegroundColor = ConsoleColor.Gray;
                         Console.Write("> ");
                         break;
-                        
+
                     case MessageType.Action:
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.Write($"* {message.User} ");
                         break;
-                        
+
                     case MessageType.Notice:
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Write("<");
@@ -196,20 +208,21 @@ namespace ConsoleIrcClient
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Write("> ");
                         break;
-                        
+
                     default:
                         Console.ForegroundColor = ConsoleColor.Gray;
                         Console.Write("<");
-                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        Console.ForegroundColor = message.Mention ? ConsoleColor.Magenta : ConsoleColor.Cyan;
                         Console.Write($"{message.User}");
                         Console.ForegroundColor = ConsoleColor.Gray;
                         Console.Write("> ");
                         break;
                 }
-                
-                // Print message text
+
+                // Print message text with IRC formatting (ANSI colors)
                 Console.ForegroundColor = originalColor;
-                Console.WriteLine(message.Text);
+                AnsiFormatter.WriteFormatted(message);
+                Console.WriteLine();
             }
         }
 
@@ -285,7 +298,35 @@ namespace ConsoleIrcClient
         public override void RunCommand(string channel, string[] args)
         {
             var chan = Irc.ChannelList[channel];
-            ClientMessage(channel, "List of users: " + string.Join(", ", chan.Store.Users));
+            var originalColor = Console.ForegroundColor;
+
+            Console.WriteLine($"\n=== Users in {channel} ({chan.Store.Users.Count}) ===");
+
+            foreach (var user in chan.Store.Users)
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.Write($"  {user.FullUsername}");
+
+                if (!string.IsNullOrEmpty(user.Account))
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.Write($" [{user.Account}]");
+                }
+
+                if (user.IsAway)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.Write(" (away");
+                    if (!string.IsNullOrEmpty(user.AwayMessage))
+                        Console.Write($": {user.AwayMessage}");
+                    Console.Write(")");
+                }
+
+                Console.WriteLine();
+            }
+
+            Console.WriteLine("===============");
+            Console.ForegroundColor = originalColor;
         }
     }
 
@@ -355,20 +396,100 @@ namespace ConsoleIrcClient
         }
     }
 
+    internal class AwayCommand : BaseCommand
+    {
+        public override void RunCommand(string channel, string[] args)
+        {
+            var message = args.Length > 1 ? string.Join(" ", args.Skip(1)) : "Away";
+            Irc.SetAway(message);
+            ClientMessage(channel, $"You are now away: {message}");
+        }
+    }
+
+    internal class BackCommand : BaseCommand
+    {
+        public override void RunCommand(string channel, string[] args)
+        {
+            Irc.SetBack();
+            ClientMessage(channel, "You are no longer away");
+        }
+    }
+
+    internal class ReplyCommand : BaseCommand
+    {
+        public override void RunCommand(string channel, string[] args)
+        {
+            if (args.Length < 3)
+            {
+                ClientMessage(channel, "Usage: /reply <message-id> <message>");
+                return;
+            }
+
+            var replyTo = args[1];
+            var message = string.Join(" ", args.Skip(2));
+            Irc.SendReply(channel, message, replyTo);
+        }
+    }
+
+    internal class MentionsCommand : BaseCommand
+    {
+        public override void RunCommand(string channel, string[] args)
+        {
+            var originalColor = Console.ForegroundColor;
+
+            if (Irc.Mentions.Count == 0)
+            {
+                ClientMessage(channel, "No mentions");
+                return;
+            }
+
+            Console.WriteLine($"\n=== Mentions ({Irc.Mentions.Count}) ===");
+
+            foreach (var msg in Irc.Mentions)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.Write($"[{msg.Timestamp}] ");
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.Write($"{msg.Channel} ");
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.Write($"<{msg.User}> ");
+                Console.ForegroundColor = originalColor;
+                Console.WriteLine(msg.Text);
+            }
+
+            Console.WriteLine("===============");
+            Console.ForegroundColor = originalColor;
+        }
+    }
+
+    internal class MotdCommand : BaseCommand
+    {
+        public override void RunCommand(string channel, string[] args)
+        {
+            if (string.IsNullOrEmpty(Irc.MOTD))
+            {
+                ClientMessage(channel, "No MOTD available");
+                return;
+            }
+
+            Console.WriteLine(Irc.MOTD);
+        }
+    }
+
     internal class CommandsHelpCommand : BaseCommand
     {
         public override void RunCommand(string channel, string[] args)
         {
             // Save original color
             var originalColor = Console.ForegroundColor;
-            
+
             Console.WriteLine("\n=== Available Commands ===");
-            
+
             // Display standard IRC commands
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("\nStandard IRC Commands:");
             Console.ForegroundColor = ConsoleColor.White;
-            
+
             PrintCommand("/join #channel", "Join a channel");
             PrintCommand("/part #channel", "Leave a channel");
             PrintCommand("/msg nick message", "Send a private message");
@@ -376,26 +497,31 @@ namespace ConsoleIrcClient
             PrintCommand("/nick newnick", "Change your nickname");
             PrintCommand("/quit [message]", "Disconnect from the server");
             PrintCommand("/list", "Request channel list from server");
-            
+            PrintCommand("/away [message]", "Set yourself as away");
+            PrintCommand("/back", "Return from away");
+
             // Display client-specific commands
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("\nClient Commands:");
             Console.ForegroundColor = ConsoleColor.White;
-            
+
             PrintCommand("/switch [channel]", "Switch to a channel or show channel list");
             PrintCommand("/channels", "Show formatted list of joined channels");
-            PrintCommand("/users", "Show users in current channel");
+            PrintCommand("/users", "Show users in current channel (with away/account info)");
+            PrintCommand("/reply <id> <msg>", "Reply to a specific message by ID");
+            PrintCommand("/mentions", "Show all messages that mentioned you");
+            PrintCommand("/motd", "Show the server's Message of the Day");
             PrintCommand("/log", "Toggle logging to files");
             PrintCommand("/reconnect", "Reconnect to the server");
             PrintCommand("/commands", "Display this help message");
             PrintCommand("/help", "Show list of available commands");
-            
+
             Console.WriteLine("\n========================");
-            
+
             // Restore original color
             Console.ForegroundColor = originalColor;
         }
-        
+
         private void PrintCommand(string command, string description)
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
