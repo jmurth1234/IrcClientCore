@@ -2,7 +2,7 @@
 
 A .NET Core IRC library, designed for clients.
 
-[![Build Status](https://dev.azure.com/supermarioryan/supermarioryan/_apis/build/status/rymate1234.IrcClientCore?branchName=master)](https://dev.azure.com/supermarioryan/supermarioryan/_build/latest?definitionId=1&branchName=master)
+[![CI](https://github.com/rymate1234/IrcClientCore/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/rymate1234/IrcClientCore/actions/workflows/ci.yml)
 
 ## What is this?
 
@@ -12,9 +12,20 @@ application utilising the irc protocol
 It supports .NET Standard 1.4 and 2.0, so it runs on all versions of Windows 10
 and modern versions of .NET Core.
 
-All pushes to master are built by Azure Pipelines and uploaded to NuGet, 
-currently in the form 1.0.xx-yyyymmdd.x-dev-branch. Stable releases will 
-eventually be in the form yy.mm.dd or something, or possibly SemVer
+## CI/CD
+
+This repository uses GitHub Actions (`.github/workflows/ci.yml`) for CI/CD.
+
+- Triggered on push to `master`, pull requests targeting `master`, and manual runs.
+- Builds and tests with .NET SDK 5.0 in a Linux container (`mcr.microsoft.com/dotnet/sdk:5.0`).
+- Publishes TRX test results as:
+  - a downloadable workflow artifact (`test-results`)
+  - a parsed test report in GitHub Checks (including failed-test annotations)
+- Publishes NuGet packages only for direct pushes to `master` (never on pull requests).
+
+### NuGet publish setup
+
+Set the repository secret `NUGET_API_KEY` in GitHub before enabling package publish.
 
 ## What's included in this repo?
 
@@ -28,6 +39,8 @@ standard .NET build tools:
 
 ```
 $ dotnet restore
+$ dotnet build IrcClientCore.sln
+$ dotnet test IrcClientCore.Tests/IrcClientCore.Tests.csproj
 $ dotnet run --project ConsoleIrcClient
 ```
 
@@ -41,4 +54,3 @@ project, including:
 
 Like WinIRC there's no real code guidelines, although I did run this project 
 through the Rider code formatting at one point this isn't strictly followed
-
