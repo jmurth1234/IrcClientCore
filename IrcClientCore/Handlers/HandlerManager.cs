@@ -32,6 +32,13 @@ namespace IrcClientCore.Handlers
             // register the default handlers
             RegisterHandler("ING", new PingHandler());
             RegisterHandler("CAP", new CapHandler());
+            RegisterHandler("AUTHENTICATE", new AuthenticateHandler());
+            RegisterHandler("903", new AuthenticateHandler()); // SASL success
+            RegisterHandler("904", new AuthenticateHandler()); // SASL failure
+            RegisterHandler("905", new AuthenticateHandler()); // SASL failure
+            RegisterHandler("906", new AuthenticateHandler()); // SASL aborted
+            RegisterHandler("907", new AuthenticateHandler()); // Already authenticated
+            RegisterHandler("908", new AuthenticateHandler()); // Available SASL mechanisms
             RegisterHandler("NICK", new NickHandler());
             RegisterHandler("PRIVMSG", new PrivmsgHandler());
             RegisterHandler("NOTICE", new PrivmsgHandler() { Type = MessageType.Notice });
@@ -50,6 +57,28 @@ namespace IrcClientCore.Handlers
             MultiRegisterHandler(_endMotd, new ServerJoinedHandler());
             MultiRegisterHandler(_cannotSend, new CannotSendHandler());
             MultiRegisterHandler(_nickErrors, new NickErrorHandler());
+
+            // IRCv3.2 away-notify
+            MultiRegisterHandler(new string[] { "301", "305", "306", "AWAY" }, new AwayHandler());
+
+            // IRCv3.2 monitor
+            MultiRegisterHandler(new string[] { "MONITOR", "730", "731", "732", "733", "734", "735", "736" }, new MonitorHandler());
+
+            // IRCv3.2 batch
+            // Also run this handler for all commands so @batch-tagged messages are captured.
+            MultiRegisterHandler(new string[] { "BATCH", "*" }, new BatchHandler());
+
+            // IRCv3.2 chghost
+            RegisterHandler("CHGHOST", new ChgHostHandler());
+
+            // IRCv3.2 setname
+            RegisterHandler("SETNAME", new SetNameHandler());
+
+            // IRCv3.2 account-notify (+ account-tag on JOIN/PART/NICK)
+            MultiRegisterHandler(new string[] { "ACCOUNT", "JOIN", "PART", "NICK" }, new AccountNotifyHandler());
+
+            // IRCv3 TAGMSG (typing indicators, reactions)
+            RegisterHandler("TAGMSG", new TagMsgHandler());
         }
 
         private void MultiRegisterHandler(string[] commands, BaseHandler handler, HandlerPriority priority = HandlerPriority.MEDIUM)
@@ -73,11 +102,22 @@ namespace IrcClientCore.Handlers
 
         internal List<BaseHandler> GetHandlers(string potentialCommand)
         {
-            var handlers = Handlers.Where(handler => handler.Commands.Contains(potentialCommand))
-                                   .OrderByDescending(handler => (int) handler.Priority).ToList();
+            var commandHandlers = Handlers.Where(handler => handler.Commands.Contains(potentialCommand)).ToList();
+            var globalHandlers = Handlers.Where(handler => handler.Commands.Contains("*")).ToList();
+
+            var handlers = commandHandlers
+                .Concat(globalHandlers)
+                .Distinct()
+                .OrderByDescending(handler => (int)handler.Priority)
+                .ToList();
 
             if (handlers.Count >= 1)
             {
+                // Keep default handling for commands without explicit handlers.
+                if (commandHandlers.Count == 0)
+                {
+                    handlers.Add(DefaultHandler);
+                }
                 return handlers;
             }
 
@@ -89,6 +129,11 @@ namespace IrcClientCore.Handlers
             return Handlers
                     .Where(handler => handler.Commands.Contains(command))
                     .OrderByDescending(handler => (int)handler.Priority).ToList().Count > 0;
+        }
+
+        public T GetHandler<T>() where T : BaseHandler
+        {
+            return Handlers.OfType<T>().FirstOrDefault();
         }
 
     }

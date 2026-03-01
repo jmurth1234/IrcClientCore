@@ -25,6 +25,20 @@ steps:
 - script: dotnet build --configuration $(buildConfiguration) /property:Version=1.0.$(Build.BuildNumber)
   displayName: 'dotnet build $(buildConfiguration)'
 
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet test'
+  inputs:
+    command: 'test'
+    projects: 'IrcClientCore.Tests/IrcClientCore.Tests.csproj'
+    arguments: '--configuration $(buildConfiguration) --no-build --logger trx --results-directory $(Agent.TempDirectory)'
+
+- task: PublishTestResults@2
+  displayName: 'Publish test results'
+  condition: always()
+  inputs:
+    testResultsFormat: 'VSTest'
+    testResultsFiles: '$(Agent.TempDirectory)/*.trx'
+
 - script: dotnet nuget push ./IrcClientCore/bin/Debug/*.nupkg -k $(NUGET_KEY) --source https://api.nuget.org/v3/index.json
-  displayName: dotnet nuget push 
+  displayName: dotnet nuget push
 

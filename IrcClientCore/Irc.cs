@@ -22,7 +22,7 @@ namespace IrcClientCore
         public ChannelsGroup ChannelList { get; set; }
 
         public CommandManager CommandManager { get; private set; }
-        protected HandlerManager HandlerManager { get; private set; }
+        public HandlerManager HandlerManager { get; private set; }
         public ISocket Connection { get; private set; }
         public IBuffer InfoBuffer { get; private set; }
 
@@ -119,7 +119,7 @@ namespace IrcClientCore
                 await WriteLine("PASS " + Server.Password);
             }
 
-            await WriteLine("CAP LS");
+            await WriteLine("CAP LS 302");
 
             AttemptRegister();
 
@@ -226,7 +226,7 @@ namespace IrcClientCore
             if (!SupportsMessageTags)
                 AddMessage(channel, msg);
 
-            WriteLine(string.Format("+draft/reply={0} PRIVMSG {1} :{2}", reply, channel, message));
+            WriteLine(string.Format("@+draft/reply={0} PRIVMSG {1} :{2}", reply, channel, message));
         }
 
         public string GetChannelTopic(string channel)
@@ -378,6 +378,66 @@ namespace IrcClientCore
         public void AddMention(Message message)
         {
             Mentions.Add(message);
+        }
+
+        // IRCv3.2 MONITOR commands
+        public async Task MonitorAdd(string target)
+        {
+            await WriteLine($"MONITOR + {target}");
+        }
+
+        public async Task MonitorRemove(string target)
+        {
+            await WriteLine($"MONITOR - {target}");
+        }
+
+        public async Task MonitorList()
+        {
+            await WriteLine("MONITOR L");
+        }
+
+        public async Task MonitorClear()
+        {
+            await WriteLine("MONITOR C");
+        }
+
+        public async Task MonitorStatus(string target)
+        {
+            await WriteLine($"MONITOR S {target}");
+        }
+
+        // IRCv3.2 labeled-reply support
+        public async Task SendLabeledMessage(string target, string message, string label)
+        {
+            await WriteLine($"@label={label} PRIVMSG {target} :{message}");
+        }
+
+        // IRCv3.2 batch support
+        public async Task SendBatchStart(string reference, string type)
+        {
+            await WriteLine($"BATCH +{reference} {type}");
+        }
+
+        public async Task SendBatchEnd(string reference)
+        {
+            await WriteLine($"BATCH -{reference}");
+        }
+
+        // IRCv3.2 SETNAME command (change realname)
+        public async Task SetRealName(string realName)
+        {
+            await WriteLine($"SETNAME :{realName}");
+        }
+
+        // IRCv3.2 AWAY command
+        public async Task SetAway(string message)
+        {
+            await WriteLine($"AWAY :{message}");
+        }
+
+        public async Task SetBack()
+        {
+            await WriteLine("AWAY");
         }
     }
 }

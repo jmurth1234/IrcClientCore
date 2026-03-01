@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IrcClientCore", "IrcClientC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleIrcClient", "ConsoleIrcClient\ConsoleIrcClient.csproj", "{4DD4A194-4577-4368-B5A4-1CC2B610858E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IrcClientCore.Tests", "IrcClientCore.Tests\IrcClientCore.Tests.csproj", "{3592A435-C7E9-467C-A44D-43777CDDF9ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{4DD4A194-4577-4368-B5A4-1CC2B610858E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DD4A194-4577-4368-B5A4-1CC2B610858E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4DD4A194-4577-4368-B5A4-1CC2B610858E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3592A435-C7E9-467C-A44D-43777CDDF9ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3592A435-C7E9-467C-A44D-43777CDDF9ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3592A435-C7E9-467C-A44D-43777CDDF9ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3592A435-C7E9-467C-A44D-43777CDDF9ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

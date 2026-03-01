@@ -12,11 +12,15 @@ namespace IrcClientCore
     /// Since the response format is always :<prefix> <Command> <arg, arg, arg ...> :trailing content
     /// the Parser can easily break the response down in to objects representing each component of
     /// the message.
-    /// 
+    ///
     /// Code found on stackexchange - http://codereview.stackexchange.com/questions/78713/irc-server-response-parser-for-irc-client
     /// </summary>
     public class IrcMessage
     {
+        private static readonly Regex ColoursRegex = new Regex(
+            @"[\x02\x1f\x16\x0f]|\x03\d{0,2}(?:,\d{0,2})?",
+            RegexOptions.Compiled);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="IrcMessage"/> class.
         /// </summary>
@@ -24,8 +28,7 @@ namespace IrcClientCore
         public IrcMessage(string message)
         {
             // remove colours first
-            var coloursRegex = new Regex(@"[\x02\x1f\x16\x0f]|\x03\d{0,2}(?:,\d{0,2})?");
-            message = coloursRegex.Replace(message, "");
+            message = ColoursRegex.Replace(message, "");
 
             // split the line into an array
             var lineSplit = message.Split(' ').ToList();
@@ -39,9 +42,9 @@ namespace IrcClientCore
 
                 foreach (var entry in points)
                 {
-                    string[] section = entry.Split('=');
+                    string[] section = entry.Split(new[] { '=' }, 2);
                     string key = section[0];
-                    string value = section[1];
+                    string value = section.Length > 1 ? UnescapeTagValue(section[1]) : "";
                     this.Metadata.Add(key, value);
                 }
                 lineSplit.RemoveAt(0);
@@ -53,6 +56,35 @@ namespace IrcClientCore
             this.PrefixMessage = new MessagePrefix(message);
             this.TrailMessage = new MessageTrail(message);
             this.CommandMessage = new MessageCommand(message, this.PrefixMessage, this.TrailMessage);
+        }
+
+        private static string UnescapeTagValue(string value)
+        {
+            if (string.IsNullOrEmpty(value) || !value.Contains("\\"))
+                return value;
+
+            var sb = new StringBuilder(value.Length);
+            for (int i = 0; i < value.Length; i++)
+            {
+                if (value[i] == '\\' && i + 1 < value.Length)
+                {
+                    i++;
+                    switch (value[i])
+                    {
+                        case ':': sb.Append(';'); break;
+                        case 's': sb.Append(' '); break;
+                        case '\\': sb.Append('\\'); break;
+                        case 'r': sb.Append('\r'); break;
+                        case 'n': sb.Append('\n'); break;
+                        default: sb.Append(value[i]); break;
+                    }
+                }
+                else
+                {
+                    sb.Append(value[i]);
+                }
+            }
+            return sb.ToString();
         }
 
         /// <summary>
@@ -86,7 +118,7 @@ namespace IrcClientCore
         public static readonly string Time = "time";
         public static readonly string Reply = "+draft/reply";
         public static readonly string Typing = "+draft/typing";
-        public static readonly string React = "+draft/typing";
+        public static readonly string React = "+draft/react";
     }
 
     /// <summary>
@@ -217,7 +249,7 @@ namespace IrcClientCore
             var r = "[\x00-\x08\x0B\x0C\x0E-\x1F]";
             message = Regex.Replace(message, r, "", RegexOptions.Compiled);
 
-            // Find the index of the closing colon used to mark the end of the 
+            // Find the index of the closing colon used to mark the end of the
             // message meta and start of the trailing content.
             // This is always the first space, followed by a colon in the response.
             this.TrailStart = message.IndexOf(" :");

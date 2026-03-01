@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace IrcClientCore
 {
-    public class User : IComparable 
+    public class User : IComparable
     {
         internal static Dictionary<string, int> PrefixMap = new Dictionary<string, int>()
         {
@@ -21,7 +21,7 @@ namespace IrcClientCore
             {
                 var prefix = "";
 
-                if (FullUsername.Length > Nick.Length)
+                if (FullUsername != null && FullUsername.Length > Nick.Length)
                 {
                     prefix = $"{FullUsername[0]}";
                 }
@@ -36,6 +36,9 @@ namespace IrcClientCore
         {
             get
             {
+                if (string.IsNullOrEmpty(FullUsername))
+                    return "";
+
                 var potential = FullUsername.Substring(0, 1);
                 if (PrefixMap.ContainsKey(potential))
                 {
@@ -46,6 +49,26 @@ namespace IrcClientCore
             }
         }
 
+        /// <summary>
+        /// Account name if identified (from account-notify/extended-join)
+        /// </summary>
+        public string Account { get; set; }
+
+        /// <summary>
+        /// Real name from extended-join
+        /// </summary>
+        public string RealName { get; set; }
+
+        /// <summary>
+        /// Whether the user is currently away (from away-notify)
+        /// </summary>
+        public bool IsAway { get; set; }
+
+        /// <summary>
+        /// Away message if IsAway is true
+        /// </summary>
+        public string AwayMessage { get; set; }
+
         public override string ToString()
         {
             return FullUsername;
@@ -54,9 +77,9 @@ namespace IrcClientCore
         public int CompareTo(object obj)
         {
             if (obj == null) return 1;
-            
+
             User otherUser = obj as User;
-            if (otherUser != null) 
+            if (otherUser != null)
             {
                 if (this.Prefix.Equals(otherUser.Prefix))
                 {
