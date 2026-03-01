@@ -22,15 +22,19 @@ namespace IrcClientCore.Handlers.BuiltIn
 
             msg.Type = MessageType.Info;
 
+            var contentFormatted = IrcFormatParser.Parse(content);
+
             if (reciever == Irc.Server.Username)
             {
                 msg.User = parsedLine.PrefixMessage.Nickname;
-                msg.Text = "kicked you from the channel: " + content;
+                msg.Text = "kicked you from the channel: " + contentFormatted.PlainText;
+                msg.FormattedText = IrcFormatParser.Parse("kicked you from the channel: " + content);
             }
             else
             {
                 msg.User = parsedLine.PrefixMessage.Nickname;
-                msg.Text = string.Format("kicked {0} from the channel: {1}", reciever, content);
+                msg.Text = string.Format("kicked {0} from the channel: {1}", reciever, contentFormatted.PlainText);
+                msg.FormattedText = IrcFormatParser.Parse(string.Format("kicked {0} from the channel: {1}", reciever, content));
             }
 
             Irc.AddMessage(destination, msg);

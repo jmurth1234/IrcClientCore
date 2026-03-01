@@ -17,18 +17,12 @@ namespace IrcClientCore
     /// </summary>
     public class IrcMessage
     {
-        private static readonly Regex ColoursRegex = new Regex(
-            @"[\x02\x1f\x16\x0f]|\x03\d{0,2}(?:,\d{0,2})?",
-            RegexOptions.Compiled);
-
         /// <summary>
         /// Initializes a new instance of the <see cref="IrcMessage"/> class.
         /// </summary>
         /// <param name="message">The message.</param>
         public IrcMessage(string message)
         {
-            // remove colours first
-            message = ColoursRegex.Replace(message, "");
 
             // split the line into an array
             var lineSplit = message.Split(' ').ToList();
@@ -246,7 +240,10 @@ namespace IrcClientCore
         /// <param name="message">The message.</param>
         public MessageTrail(string message)
         {
-            var r = "[\x00-\x08\x0B\x0C\x0E-\x1F]";
+            // Strip control characters but preserve IRC formatting codes:
+            // \x02 bold, \x03 color, \x04 hex color, \x0F reset,
+            // \x11 monospace, \x16 reverse, \x1D italic, \x1E strikethrough, \x1F underline
+            var r = "[\x00\x01\x05-\x08\x0A-\x0C\x0E\x10\x12-\x15\x17-\x1C]";
             message = Regex.Replace(message, r, "", RegexOptions.Compiled);
 
             // Find the index of the closing colon used to mark the end of the

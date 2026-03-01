@@ -82,6 +82,7 @@ namespace IrcClientCore
         private DateTime _date;
 
         public string Text { get; set; }
+        public FormattedText FormattedText { get; set; }
         public bool Mention { get; set; }
         public MessageType Type { get; set; }
 

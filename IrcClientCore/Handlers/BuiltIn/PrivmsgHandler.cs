@@ -60,15 +60,15 @@ namespace IrcClientCore.Handlers.BuiltIn
 
             if (content.Contains("ACTION"))
             {
-                msg.Text = content.Replace("ACTION ", "");
+                content = content.Replace("ACTION ", "");
                 msg.Type = MessageType.Action;
             }
-            else
-            {
-                msg.Text = content;
-            }
 
-            if ((parsedLine.TrailMessage.TrailingContent.Contains(Irc.Server.Username) || parsedLine.CommandMessage.Parameters[0] == Irc.Server.Username))
+            var formatted = IrcFormatParser.Parse(content);
+            msg.FormattedText = formatted;
+            msg.Text = formatted.PlainText;
+
+            if ((formatted.PlainText.Contains(Irc.Server.Username) || parsedLine.CommandMessage.Parameters[0] == Irc.Server.Username))
             {
                 msg.Mention = true;
                 Irc.AddMention(msg);

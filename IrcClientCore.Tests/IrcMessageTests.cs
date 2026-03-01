@@ -195,26 +195,25 @@ namespace IrcClientCore.Tests
             Assert.Equal("plainvalue", msg.Metadata["key"]);
         }
 
-        // ── Color/Control Code Stripping ─────────────────────────────────────────
+        // ── Formatting Code Preservation ─────────────────────────────────────────
 
         [Fact]
-        public void Parse_MircColorCodes_AreStripped()
+        public void Parse_MircColorCodes_ArePreserved()
         {
-            // \u0003 is the MIRC color code. "04" is the foreground color number.
-            // Using \u0003 to avoid C# greedy hex-escape parsing (\x0304 = U+0304, not \x03+"04")
+            // \u0003 is the MIRC color code. Formatting codes are now preserved in TrailingContent
+            // and parsed by IrcFormatParser instead of being stripped.
             var coloredMsg = "\u000304Red\u0003 Normal";
             var msg = new IrcMessage($":nick!user@host PRIVMSG #chan :{coloredMsg}");
-            Assert.Equal("Red Normal", msg.TrailMessage.TrailingContent);
+            Assert.Equal(coloredMsg, msg.TrailMessage.TrailingContent);
         }
 
         [Fact]
-        public void Parse_BoldControlCode_IsStripped()
+        public void Parse_BoldControlCode_IsPreserved()
         {
-            // \u0002 is bold. Using \u escapes to avoid C# greedy hex parsing
-            // e.g., \x02B would be parsed as U+002B ('+'), not \x02 + 'B'
+            // \u0002 is bold. Formatting codes are now preserved in TrailingContent.
             var boldMsg = "\u0002Bold\u0002 Normal";
             var msg = new IrcMessage($":nick!user@host PRIVMSG #chan :{boldMsg}");
-            Assert.Equal("Bold Normal", msg.TrailMessage.TrailingContent);
+            Assert.Equal(boldMsg, msg.TrailMessage.TrailingContent);
         }
 
         // ── IrcMessage Constants ──────────────────────────────────────────────────

@@ -26,9 +26,11 @@ namespace IrcClientCore.Handlers.BuiltIn
             {
                 _currentMOTD += parsedLine.TrailMessage.TrailingContent;
 
+                var formatted = IrcFormatParser.Parse(_currentMOTD);
                 var msg = new Message
                 {
-                    Text = _currentMOTD,
+                    Text = formatted.PlainText,
+                    FormattedText = formatted,
                     Type = MessageType.MOTD
                 };
                 Irc.AddMessage("", msg);

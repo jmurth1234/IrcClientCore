@@ -36,8 +36,10 @@ namespace IrcClientCore.Handlers.BuiltIn
 
             if (cmd == "318")
             {
+                var formatted = IrcFormatParser.Parse(_currentWhois);
                 var msg = new Message();
-                msg.Text = _currentWhois;
+                msg.Text = formatted.PlainText;
+                msg.FormattedText = formatted;
                 msg.Type = MessageType.Info;
                 Irc.AddMessage(Irc.WhoisDestination, msg);
 

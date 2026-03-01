@@ -23,9 +23,11 @@ namespace IrcClientCore.Handlers.BuiltIn
             msg.Type = MessageType.Info;
 
             msg.User = "";
-            msg.Text = string.Format("Topic for channel {0}: {1}", channel, topic);
+            var topicFormatted = IrcFormatParser.Parse(topic);
+            msg.Text = string.Format("Topic for channel {0}: {1}", channel, topicFormatted.PlainText);
+            msg.FormattedText = IrcFormatParser.Parse(string.Format("Topic for channel {0}: {1}", channel, topic));
             Irc.AddMessage(channel, msg);
-            Irc.ChannelList[channel].Store.Topic = topic;
+            Irc.ChannelList[channel].Store.Topic = topicFormatted.PlainText;
             return true;
         }
     }
