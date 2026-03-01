@@ -16,17 +16,14 @@ permissions:
 jobs:
   build-test-pack:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:5.0
     env:
       BUILD_CONFIGURATION: Debug
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 5.0.x
 
       - name: Restore
         run: dotnet restore IrcClientCore.sln
@@ -35,14 +32,14 @@ jobs:
         run: dotnet build IrcClientCore.sln --configuration $BUILD_CONFIGURATION --no-restore /p:Version=1.0.${{ github.run_number }}
 
       - name: Test
-        run: dotnet test IrcClientCore.Tests/IrcClientCore.Tests.csproj --configuration $BUILD_CONFIGURATION --no-build --logger "trx;LogFileName=test-results.trx" --results-directory "${{ runner.temp }}"
+        run: dotnet test IrcClientCore.Tests/IrcClientCore.Tests.csproj --configuration $BUILD_CONFIGURATION --no-build --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: ${{ runner.temp }}/*.trx
+          path: TestResults/*.trx
           if-no-files-found: warn
 
       - name: Publish test report
@@ -50,7 +47,7 @@ jobs:
         uses: dorny/test-reporter@v1
         with:
           name: .NET Test Results
-          path: ${{ runner.temp }}/*.trx
+          path: TestResults/*.trx
           reporter: dotnet-trx
           fail-on-error: true
 
